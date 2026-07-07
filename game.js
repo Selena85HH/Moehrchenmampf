@@ -646,8 +646,8 @@ function placeCarrot() {
 
 function updateHud() {
   const playerOne = players[0];
-  modeLabel.textContent = getModeName();
-  levelBadge.classList.toggle("hidden", mode !== "levels");
+  modeLabel.textContent = mode === "levels" ? `Level ${currentLevelIndex + 1} von ${levels.length}` : getModeName();
+  levelBadge.classList.add("hidden");
   levelNumber.textContent = String(currentLevelIndex + 1);
   updateHighscoreSummaryVisibility();
 
