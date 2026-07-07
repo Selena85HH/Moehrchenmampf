@@ -153,6 +153,7 @@ const sounds = {
   gameOver: new Audio("assets/sounds/game-over.wav"),
   countdown: new Audio("assets/sounds/countdown.wav"),
   click: new Audio("assets/sounds/click.wav"),
+  menu: new Audio("assets/sounds/menu.mp3"),
   start: new Audio("assets/sounds/start.wav"),
   pause: new Audio("assets/sounds/pause.wav")
 };
@@ -1241,7 +1242,7 @@ document.addEventListener("pointerdown", unlockAudio, { once: true });
 document.addEventListener("keydown", unlockAudio, { once: true });
 document.addEventListener("click", (event) => {
   if (event.target.closest("button")) {
-    playSound("click");
+    playSound("menu");
   }
 });
 
@@ -1310,7 +1311,7 @@ soundEnabledInput.addEventListener("change", () => {
   settings.soundEnabled = soundEnabledInput.checked;
   saveSettings();
   if (settings.soundEnabled) {
-    playSound("click");
+    playSound("menu");
     if (running && !paused && !countdownActive) {
       startBackgroundMusic();
     }
