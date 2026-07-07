@@ -31,7 +31,7 @@ Alternativ kannst du in Visual Studio Code die Erweiterung "Live Server" verwend
 - `manifest.json`: PWA-Informationen
 - `service-worker.js`: Offline-Cache für die PWA
 - `assets/icons/icon.svg`: App-Icon
-- `assets/sounds/`: kurze Soundeffekte für Spielereignisse
+- `assets/sounds/`: kurze Soundeffekte und Hintergrundmusik für das Spiel
 
 ## Microsoft Store
 

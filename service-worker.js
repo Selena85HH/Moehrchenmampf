@@ -1,9 +1,9 @@
-const CACHE_NAME = "moehrchenmampf-v30";
+const CACHE_NAME = "moehrchenmampf-v31";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
-  "./styles.css?v=30",
-  "./game.js?v=30",
+  "./styles.css?v=31",
+  "./game.js?v=31",
   "./manifest.json",
   "./assets/logo-title.png",
   "./assets/icons/icon-192.png",
@@ -17,7 +17,8 @@ const FILES_TO_CACHE = [
   "./assets/sounds/countdown.wav",
   "./assets/sounds/click.wav",
   "./assets/sounds/start.wav",
-  "./assets/sounds/pause.wav"
+  "./assets/sounds/pause.wav",
+  "./assets/sounds/background-loop.mp3"
 ];
 
 self.addEventListener("install", (event) => {

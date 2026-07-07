@@ -156,6 +156,8 @@ const sounds = {
   start: new Audio("assets/sounds/start.wav"),
   pause: new Audio("assets/sounds/pause.wav")
 };
+const backgroundMusic = new Audio("assets/sounds/background-loop.mp3");
+backgroundMusic.loop = true;
 
 function loadSettings() {
   try {
@@ -198,6 +200,7 @@ function updateSoundVolumes() {
   Object.values(sounds).forEach((sound) => {
     sound.volume = settings.soundVolume;
   });
+  backgroundMusic.volume = settings.soundVolume * 0.28;
 }
 
 function unlockAudio() {
@@ -209,6 +212,7 @@ function unlockAudio() {
   Object.values(sounds).forEach((sound) => {
     sound.load();
   });
+  backgroundMusic.load();
 }
 
 function playSound(name) {
@@ -219,6 +223,24 @@ function playSound(name) {
   const sound = sounds[name].cloneNode();
   sound.volume = settings.soundVolume;
   sound.play().catch(() => {});
+}
+
+function startBackgroundMusic() {
+  if (!settings.soundEnabled || !audioUnlocked) {
+    return;
+  }
+
+  backgroundMusic.volume = settings.soundVolume * 0.28;
+  backgroundMusic.play().catch(() => {});
+}
+
+function pauseBackgroundMusic() {
+  backgroundMusic.pause();
+}
+
+function stopBackgroundMusic() {
+  backgroundMusic.pause();
+  backgroundMusic.currentTime = 0;
 }
 
 function applyVisualSettings() {
@@ -324,6 +346,7 @@ function startMode() {
   clearInterval(gameTimer);
   clearCountdown();
   playSound("start");
+  startBackgroundMusic();
   menuOpen = false;
   running = true;
   paused = false;
@@ -358,6 +381,7 @@ function pauseGame() {
 
   paused = true;
   playSound("pause");
+  pauseBackgroundMusic();
   clearInterval(gameTimer);
   setOverlayMode("pause");
   messageTitle.textContent = "Pause";
@@ -376,6 +400,7 @@ function resumeGame() {
 
   paused = false;
   playSound("start");
+  startBackgroundMusic();
   updatePauseButton();
   beginCountdown(() => {
     gameTimer = setInterval(tick, currentSpeed);
@@ -632,6 +657,7 @@ function evaluateMultiplayerMode() {
 function endGame(title, text, buttonText) {
   clearInterval(gameTimer);
   clearCountdown();
+  stopBackgroundMusic();
   running = false;
   paused = false;
   draw();
@@ -653,6 +679,7 @@ function showOverlay(title, text, buttonText) {
 function showMenu() {
   clearInterval(gameTimer);
   clearCountdown();
+  stopBackgroundMusic();
   menuOpen = true;
   running = false;
   paused = false;
@@ -1284,6 +1311,11 @@ soundEnabledInput.addEventListener("change", () => {
   saveSettings();
   if (settings.soundEnabled) {
     playSound("click");
+    if (running && !paused && !countdownActive) {
+      startBackgroundMusic();
+    }
+  } else {
+    pauseBackgroundMusic();
   }
 });
 
