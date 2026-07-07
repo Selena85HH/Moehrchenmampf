@@ -145,8 +145,8 @@ p {
 h1 {
   margin-bottom: 0;
   color: #31501f;
-  font-size: clamp(2.1rem, 4vw, 3.5rem);
-  line-height: 0.9;
+  font-size: clamp(1.9rem, 3.6vw, 3.05rem);
+  line-height: 1;
   text-shadow: 0 3px 0 rgba(255, 255, 255, 0.75);
   max-width: 100%;
   white-space: nowrap;
@@ -663,7 +663,7 @@ body.joystick-large .joystick-knob {
   }
 
   h1 {
-    font-size: clamp(1.8rem, 9.2vw, 2.7rem);
+    font-size: clamp(1.65rem, 8.2vw, 2.45rem);
   }
 
   .scoreboard {
@@ -721,8 +721,8 @@ body.joystick-large .joystick-knob {
   }
 
   h1 {
-    font-size: clamp(1.25rem, 4.2vw, 2rem);
-    line-height: 0.9;
+    font-size: clamp(1.2rem, 3.6vw, 1.8rem);
+    line-height: 1;
   }
 
   .scoreboard {
@@ -909,8 +909,8 @@ body.joystick-large .joystick-knob {
 
   h1 {
     max-width: 100%;
-    font-size: clamp(1.55rem, 7.6vw, 2.2rem);
-    line-height: 0.92;
+    font-size: clamp(1.42rem, 6.7vw, 2rem);
+    line-height: 1;
     white-space: nowrap;
     overflow-wrap: normal;
     word-break: normal;
@@ -1028,7 +1028,7 @@ body.joystick-large .joystick-knob {
 
 @media (max-width: 380px) and (orientation: portrait) {
   h1 {
-    font-size: clamp(1.38rem, 7.2vw, 1.9rem);
+    font-size: clamp(1.24rem, 6.5vw, 1.7rem);
   }
 
   .scoreboard {
