@@ -11,12 +11,14 @@ const scoreElement = document.querySelector("#score");
 const levelName = document.querySelector("#levelName");
 const levelDescription = document.querySelector("#levelDescription");
 const levelList = document.querySelector("#levelList");
+const levelCard = document.querySelector(".level-card");
 const messageOverlay = document.querySelector("#messageOverlay");
 const messageTitle = document.querySelector("#messageTitle");
 const messageText = document.querySelector("#messageText");
 const modeButtons = document.querySelector("#modeButtons");
 const primaryButton = document.querySelector("#primaryButton");
 const pauseButton = document.querySelector("#pauseButton");
+const scoreboard = document.querySelector(".scoreboard");
 const playerTwoJoystick = document.querySelector('[data-player-pad="p2"]');
 const highscoreSummary = document.querySelector("#highscoreSummary");
 const settingsButton = document.querySelector("#settingsButton");
@@ -133,6 +135,7 @@ let countdownFinishTimer;
 let running = false;
 let paused = false;
 let countdownActive = false;
+let menuOpen = true;
 let currentSpeed = levels[0].speed;
 let selectedModeIndex = 0;
 let lastGamepadDirectionKey = "";
@@ -321,9 +324,13 @@ function startMode() {
   clearInterval(gameTimer);
   clearCountdown();
   playSound("start");
+  menuOpen = false;
   running = true;
   paused = false;
   levelStartScore = score;
+  scoreboard.classList.remove("hidden");
+  pauseButton.classList.remove("hidden");
+  levelCard.classList.remove("hidden");
 
   if (mode === "multiplayer") {
     players = createMultiplayerPlayers();
@@ -646,6 +653,7 @@ function showOverlay(title, text, buttonText) {
 function showMenu() {
   clearInterval(gameTimer);
   clearCountdown();
+  menuOpen = true;
   running = false;
   paused = false;
   mode = "levels";
@@ -655,13 +663,17 @@ function showMenu() {
   carrot = placeCarrot();
   primaryButton.classList.add("hidden");
   setModeButtonsVisible(true);
-  messageTitle.textContent = "Spielmodus wählen";
-  messageText.textContent = "Level-Abenteuer, Endlos-Spiel oder ein lokales Duell zu zweit.";
+  modeLabel.textContent = "Willkommen";
+  levelBadge.classList.add("hidden");
+  scoreboard.classList.add("hidden");
+  pauseButton.classList.add("hidden");
+  levelCard.classList.add("hidden");
+  highscoreSummary.classList.add("hidden");
+  messageTitle.textContent = "Willkommen bei Möhrchenmampf";
+  messageText.textContent = "Wähle einen Spielmodus und hopp dann los.";
   messageOverlay.classList.remove("hidden");
   selectedModeIndex = 0;
   updateSelectedModeButton();
-  updateHud();
-  renderInfoPanel();
   updateTouchControls();
   updatePauseButton();
   draw();
@@ -1242,8 +1254,12 @@ settingsForm.addEventListener("submit", (event) => {
       player.name = settings.playerTwoName;
     }
   });
-  updateHud();
-  renderInfoPanel();
+  if (menuOpen) {
+    modeLabel.textContent = "Willkommen";
+  } else {
+    updateHud();
+    renderInfoPanel();
+  }
   settingsDialog.classList.add("hidden");
 });
 

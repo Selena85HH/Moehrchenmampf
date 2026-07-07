@@ -7,20 +7,20 @@
     <meta name="color-scheme" content="light only" />
     <title>Möhrchenmampf</title>
     <link rel="manifest" href="manifest.json" />
-    <link rel="stylesheet" href="styles.css?v=26" />
+    <link rel="stylesheet" href="styles.css?v=27" />
   </head>
   <body>
     <main class="app-shell">
       <section class="game-panel" aria-label="Möhrchenmampf Spiel">
         <header class="topbar">
           <div>
-            <p class="eyebrow"><span id="modeLabel">Level 1 von 5</span><span id="levelBadge" class="hidden"><span id="levelNumber">1</span></span></p>
+            <p class="eyebrow"><span id="modeLabel">Willkommen</span><span id="levelBadge" class="hidden"><span id="levelNumber">1</span></span></p>
             <h1>Möhrchenmampf</h1>
           </div>
           <div class="header-side">
-            <button id="pauseButton" class="icon-button" type="button" aria-label="Spiel pausieren">Ⅱ</button>
+            <button id="pauseButton" class="icon-button hidden" type="button" aria-label="Spiel pausieren">Ⅱ</button>
             <button id="settingsButton" class="icon-button" type="button" aria-label="Einstellungen öffnen">⚙</button>
-            <div class="scoreboard" aria-label="Spielstand">
+            <div class="scoreboard hidden" aria-label="Spielstand">
               <span id="carrotScoreLine">Möhren: <strong id="carrotCount">0</strong>/<strong id="targetCount">10</strong></span>
               <span>Punkte: <strong id="score">0</strong></span>
             </div>
@@ -31,8 +31,8 @@
           <canvas id="gameCanvas" width="640" height="640" aria-label="Spielfeld"></canvas>
           <div id="messageOverlay" class="message-overlay">
             <div>
-              <h2 id="messageTitle">Bereit?</h2>
-              <p id="messageText">Hilf dem Häschen, alle Möhrchen zu finden.</p>
+              <h2 id="messageTitle">Willkommen bei Möhrchenmampf</h2>
+              <p id="messageText">Wähle einen Spielmodus und hopp dann los.</p>
               <p id="highscoreSummary" class="highscore-summary"></p>
               <div id="modeButtons" class="mode-buttons">
                 <button type="button" data-mode="levels">Level-Spiel</button>
@@ -46,9 +46,9 @@
 
       </section>
 
-      <aside class="level-card" aria-label="Levelinformationen">
-        <h2 id="levelName">Sonnige Wiese</h2>
-        <p id="levelDescription">Ein offenes Feld zum Eingewöhnen.</p>
+      <aside class="level-card hidden" aria-label="Levelinformationen">
+        <h2 id="levelName">Willkommen</h2>
+        <p id="levelDescription">Wähle links einen Spielmodus.</p>
         <ul id="levelList"></ul>
       </aside>
     </main>
@@ -126,6 +126,6 @@
       </div>
     </div>
 
-    <script src="game.js?v=26"></script>
+    <script src="game.js?v=27"></script>
   </body>
 </html>
