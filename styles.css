@@ -303,8 +303,13 @@ canvas {
 }
 
 #primaryButton {
+  margin-top: 18px;
   padding: 14px 24px;
   font-size: 1.06rem;
+}
+
+.mode-buttons.hidden + #primaryButton {
+  margin-top: 0;
 }
 
 .mode-buttons {
