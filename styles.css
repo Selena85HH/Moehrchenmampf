@@ -486,6 +486,24 @@ canvas {
   font: inherit;
 }
 
+.settings-form input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  accent-color: var(--leaf);
+}
+
+.settings-form input[type="range"] {
+  padding: 8px 0;
+  accent-color: var(--leaf);
+}
+
+.checkbox-label {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  justify-content: start;
+}
+
 .settings-note {
   display: grid;
   gap: 5px;

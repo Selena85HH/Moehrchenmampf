@@ -7,7 +7,7 @@
     <meta name="color-scheme" content="light only" />
     <title>Möhrchenmampf</title>
     <link rel="manifest" href="manifest.json" />
-    <link rel="stylesheet" href="styles.css?v=25" />
+    <link rel="stylesheet" href="styles.css?v=26" />
   </head>
   <body>
     <main class="app-shell">
@@ -104,6 +104,14 @@
               <option value="large">Groß</option>
             </select>
           </label>
+          <label class="checkbox-label">
+            <input id="soundEnabledInput" name="soundEnabled" type="checkbox" />
+            Ton an
+          </label>
+          <label>
+            Lautstärke
+            <input id="soundVolumeInput" name="soundVolume" type="range" min="0" max="100" step="5" />
+          </label>
 
           <div class="settings-note">
             <strong>Endlos-Highscore</strong>
@@ -118,6 +126,6 @@
       </div>
     </div>
 
-    <script src="game.js?v=25"></script>
+    <script src="game.js?v=26"></script>
   </body>
 </html>

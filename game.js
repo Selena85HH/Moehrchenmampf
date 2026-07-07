@@ -27,6 +27,8 @@ const playerOneNameInput = document.querySelector("#playerOneName");
 const playerTwoNameInput = document.querySelector("#playerTwoName");
 const themeSelect = document.querySelector("#themeSelect");
 const joystickSizeSelect = document.querySelector("#joystickSizeSelect");
+const soundEnabledInput = document.querySelector("#soundEnabledInput");
+const soundVolumeInput = document.querySelector("#soundVolumeInput");
 const settingsHighscore = document.querySelector("#settingsHighscore");
 const resetHighscoreButton = document.querySelector("#resetHighscoreButton");
 
@@ -40,6 +42,8 @@ const defaultSettings = {
   playerTwoName: "Spieler 2",
   theme: "standard",
   joystickSize: "medium",
+  soundEnabled: true,
+  soundVolume: 0.65,
   endlessHighscore: {
     name: "",
     score: 0,
@@ -133,10 +137,21 @@ let currentSpeed = levels[0].speed;
 let selectedModeIndex = 0;
 let lastGamepadDirectionKey = "";
 let lastGamepadMenuMove = 0;
+let audioUnlocked = false;
 let gamepadButtonState = {
   action: false,
   back: false,
   pause: false
+};
+
+const sounds = {
+  carrot: new Audio("assets/sounds/carrot.wav"),
+  levelComplete: new Audio("assets/sounds/level-complete.wav"),
+  gameOver: new Audio("assets/sounds/game-over.wav"),
+  countdown: new Audio("assets/sounds/countdown.wav"),
+  click: new Audio("assets/sounds/click.wav"),
+  start: new Audio("assets/sounds/start.wav"),
+  pause: new Audio("assets/sounds/pause.wav")
 };
 
 function loadSettings() {
@@ -145,6 +160,10 @@ function loadSettings() {
     return {
       ...defaultSettings,
       ...savedSettings,
+      soundEnabled: savedSettings?.soundEnabled ?? defaultSettings.soundEnabled,
+      soundVolume: Number.isFinite(Number(savedSettings?.soundVolume))
+        ? Math.min(1, Math.max(0, Number(savedSettings.soundVolume)))
+        : defaultSettings.soundVolume,
       endlessHighscore: {
         ...defaultSettings.endlessHighscore,
         ...(savedSettings?.endlessHighscore || {})
@@ -165,8 +184,38 @@ function applySettings() {
   playerTwoNameInput.value = settings.playerTwoName;
   themeSelect.value = settings.theme;
   joystickSizeSelect.value = settings.joystickSize;
+  soundEnabledInput.checked = settings.soundEnabled;
+  soundVolumeInput.value = String(Math.round(settings.soundVolume * 100));
+  updateSoundVolumes();
   updateJoystickLabels();
   updateHighscoreText();
+}
+
+function updateSoundVolumes() {
+  Object.values(sounds).forEach((sound) => {
+    sound.volume = settings.soundVolume;
+  });
+}
+
+function unlockAudio() {
+  if (audioUnlocked) {
+    return;
+  }
+
+  audioUnlocked = true;
+  Object.values(sounds).forEach((sound) => {
+    sound.load();
+  });
+}
+
+function playSound(name) {
+  if (!settings.soundEnabled || !audioUnlocked || !sounds[name]) {
+    return;
+  }
+
+  const sound = sounds[name].cloneNode();
+  sound.volume = settings.soundVolume;
+  sound.play().catch(() => {});
 }
 
 function applyVisualSettings() {
@@ -271,6 +320,7 @@ function chooseMode(nextMode) {
 function startMode() {
   clearInterval(gameTimer);
   clearCountdown();
+  playSound("start");
   running = true;
   paused = false;
   levelStartScore = score;
@@ -300,6 +350,7 @@ function pauseGame() {
   }
 
   paused = true;
+  playSound("pause");
   clearInterval(gameTimer);
   setOverlayMode("pause");
   messageTitle.textContent = "Pause";
@@ -317,6 +368,7 @@ function resumeGame() {
   }
 
   paused = false;
+  playSound("start");
   updatePauseButton();
   beginCountdown(() => {
     gameTimer = setInterval(tick, currentSpeed);
@@ -375,6 +427,7 @@ function beginCountdown(onComplete) {
 }
 
 function renderCountdown(count) {
+  playSound("countdown");
   messageTitle.textContent = String(count);
   messageText.textContent = "Bereit machen...";
 }
@@ -428,6 +481,7 @@ function tick() {
     if (move.eats) {
       move.player.carrots += 1;
       score += mode === "levels" ? 10 + currentLevelIndex * 5 : 10;
+      playSound("carrot");
     } else {
       move.player.body.pop();
     }
@@ -489,6 +543,7 @@ function evaluateRound() {
 function evaluateLevelMode() {
   const player = players[0];
   if (!player.alive) {
+    playSound("gameOver");
     score = levelStartScore;
     updateHud();
     endGame("Verheddert!", "Das Häschen braucht noch einen Versuch.", "Level neu starten");
@@ -503,6 +558,7 @@ function evaluateLevelMode() {
   running = false;
 
   if (currentLevelIndex === levels.length - 1) {
+    playSound("levelComplete");
     currentLevelIndex = 0;
     score = 0;
     showOverlay("Gewonnen!", "Das Häschen hat das große Möhrchenfest gemeistert.", "Nochmal spielen");
@@ -512,6 +568,7 @@ function evaluateLevelMode() {
   }
 
   currentLevelIndex += 1;
+  playSound("levelComplete");
   showOverlay("Level geschafft!", "Das nächste Feld wartet schon.", "Weiterhoppeln");
   updateHud();
   renderInfoPanel();
@@ -520,6 +577,7 @@ function evaluateLevelMode() {
 function evaluateEndlessMode() {
   const player = players[0];
   if (!player.alive) {
+    playSound("gameOver");
     const isNewHighscore = score > settings.endlessHighscore.score;
     if (isNewHighscore) {
       settings.endlessHighscore = {
@@ -549,14 +607,17 @@ function evaluateEndlessMode() {
 function evaluateMultiplayerMode() {
   const winnerByCarrots = players.find((player) => player.carrots >= multiplayerTarget);
   if (winnerByCarrots) {
+    playSound("levelComplete");
     endGame(`${winnerByCarrots.name} gewinnt!`, `${winnerByCarrots.name} hat zuerst ${multiplayerTarget} Möhrchen gesammelt.`, "Revanche");
     return;
   }
 
   const alivePlayers = players.filter((player) => player.alive);
   if (alivePlayers.length === 1) {
+    playSound("gameOver");
     endGame(`${alivePlayers[0].name} gewinnt!`, "Das andere Häschen hat sich verheddert.", "Revanche");
   } else if (alivePlayers.length === 0) {
+    playSound("gameOver");
     endGame("Unentschieden!", "Beide Häschen sind gleichzeitig gestolpert.", "Revanche");
   }
 }
@@ -1137,6 +1198,14 @@ primaryButton.addEventListener("click", () => {
 
 pauseButton.addEventListener("click", togglePause);
 
+document.addEventListener("pointerdown", unlockAudio, { once: true });
+document.addEventListener("keydown", unlockAudio, { once: true });
+document.addEventListener("click", (event) => {
+  if (event.target.closest("button")) {
+    playSound("click");
+  }
+});
+
 settingsButton.addEventListener("click", () => {
   applySettings();
   settingsDialog.classList.remove("hidden");
@@ -1159,7 +1228,9 @@ settingsForm.addEventListener("submit", (event) => {
     playerOneName: playerOneNameInput.value.trim() || defaultSettings.playerOneName,
     playerTwoName: playerTwoNameInput.value.trim() || defaultSettings.playerTwoName,
     theme: themeSelect.value,
-    joystickSize: joystickSizeSelect.value
+    joystickSize: joystickSizeSelect.value,
+    soundEnabled: soundEnabledInput.checked,
+    soundVolume: Number(soundVolumeInput.value) / 100
   };
   saveSettings();
   applySettings();
@@ -1190,6 +1261,20 @@ themeSelect.addEventListener("change", () => {
 joystickSizeSelect.addEventListener("change", () => {
   settings.joystickSize = joystickSizeSelect.value;
   applyVisualSettings();
+});
+
+soundEnabledInput.addEventListener("change", () => {
+  settings.soundEnabled = soundEnabledInput.checked;
+  saveSettings();
+  if (settings.soundEnabled) {
+    playSound("click");
+  }
+});
+
+soundVolumeInput.addEventListener("input", () => {
+  settings.soundVolume = Number(soundVolumeInput.value) / 100;
+  updateSoundVolumes();
+  saveSettings();
 });
 
 document.addEventListener("keydown", (event) => {
