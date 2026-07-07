@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#7bd56f" />
+    <meta name="color-scheme" content="light only" />
+    <title>Möhrchenmampf</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="styles.css?v=22" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="game-panel" aria-label="Möhrchenmampf Spiel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow"><span id="modeLabel">Level-Spiel</span> <span id="levelBadge">Level <span id="levelNumber">1</span> von 5</span></p>
+            <h1>Möhrchenmampf</h1>
+          </div>
+          <div class="header-side">
+            <button id="pauseButton" class="icon-button" type="button" aria-label="Spiel pausieren">Ⅱ</button>
+            <button id="settingsButton" class="icon-button" type="button" aria-label="Einstellungen öffnen">⚙</button>
+            <div class="scoreboard" aria-label="Spielstand">
+              <span id="carrotScoreLine">Möhren: <strong id="carrotCount">0</strong>/<strong id="targetCount">10</strong></span>
+              <span>Punkte: <strong id="score">0</strong></span>
+            </div>
+          </div>
+        </header>
+
+        <div class="canvas-wrap">
+          <canvas id="gameCanvas" width="640" height="640" aria-label="Spielfeld"></canvas>
+          <div id="messageOverlay" class="message-overlay">
+            <div>
+              <h2 id="messageTitle">Bereit?</h2>
+              <p id="messageText">Hilf dem Häschen, alle Möhrchen zu finden.</p>
+              <p id="highscoreSummary" class="highscore-summary"></p>
+              <div id="modeButtons" class="mode-buttons">
+                <button type="button" data-mode="levels">Level-Spiel</button>
+                <button type="button" data-mode="endless">Endlos-Spiel</button>
+                <button type="button" data-mode="multiplayer">2 Spieler</button>
+              </div>
+              <button id="primaryButton" type="button" class="hidden">Nochmal spielen</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <aside class="level-card" aria-label="Levelinformationen">
+        <h2 id="levelName">Sonnige Wiese</h2>
+        <p id="levelDescription">Ein offenes Feld zum Eingewöhnen.</p>
+        <ul id="levelList"></ul>
+      </aside>
+    </main>
+
+    <div class="rotate-hint" aria-hidden="true">
+      <strong>Bitte drehen</strong>
+      <span>Auf dem Smartphone spielt sich Möhrchenmampf am besten im Querformat.</span>
+    </div>
+
+    <div id="touchControls" class="touch-controls" aria-label="Touch-Joysticks">
+      <div class="joystick hidden" data-player-pad="p2" data-player="p2" aria-label="Joystick Spieler 2">
+        <span>Spieler 2</span>
+        <div class="joystick-knob"></div>
+      </div>
+      <div class="joystick" data-player-pad="p1" data-player="p1" aria-label="Joystick Spieler 1">
+        <span>Spieler 1</span>
+        <div class="joystick-knob"></div>
+      </div>
+    </div>
+
+    <div id="settingsDialog" class="settings-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="settings-panel">
+        <div class="settings-header">
+          <div>
+            <p class="settings-kicker">Möhrchenmampf</p>
+            <h2 id="settingsTitle">Einstellungen</h2>
+          </div>
+          <button id="closeSettingsButton" class="icon-button" type="button" aria-label="Einstellungen schließen">×</button>
+        </div>
+
+        <form id="settingsForm" class="settings-form">
+          <label>
+            Spieler 1
+            <input id="playerOneName" name="playerOneName" maxlength="16" autocomplete="off" />
+          </label>
+          <label>
+            Spieler 2
+            <input id="playerTwoName" name="playerTwoName" maxlength="16" autocomplete="off" />
+          </label>
+          <label>
+            Farben
+            <select id="themeSelect" name="theme">
+              <option value="standard">Standard hell</option>
+              <option value="pastel">Pastell</option>
+              <option value="contrast">Hoher Kontrast</option>
+            </select>
+          </label>
+          <label>
+            Joystick-Größe
+            <select id="joystickSizeSelect" name="joystickSize">
+              <option value="small">Klein</option>
+              <option value="medium">Mittel</option>
+              <option value="large">Groß</option>
+            </select>
+          </label>
+
+          <div class="settings-note">
+            <strong>Endlos-Highscore</strong>
+            <span id="settingsHighscore">Noch kein Rekord.</span>
+          </div>
+
+          <div class="settings-actions">
+            <button id="resetHighscoreButton" type="button" class="secondary-button">Highscore löschen</button>
+            <button id="saveSettingsButton" type="submit">Speichern</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="game.js?v=22"></script>
+  </body>
+</html>
