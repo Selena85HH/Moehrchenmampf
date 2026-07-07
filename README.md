@@ -53,7 +53,7 @@ Nach dem ersten Lauf ist die Spiel-URL voraussichtlich:
 https://selena85hh.github.io/Moehrchenmampf/
 ```
 
-Falls GitHub Pages noch nicht aktiv ist: Im Repository unter `Settings` -> `Pages` als Quelle `GitHub Actions` auswählen.
+Wichtig: Der Workflow funktioniert erst, wenn GitHub Pages im Repository aktiviert ist. Im Repository unter `Settings` -> `Pages` bei `Build and deployment` als Quelle `GitHub Actions` auswählen. Danach den Workflow erneut starten oder eine neue Änderung auf `main` hochladen.
 
 ## Aktueller Paketstand
 
