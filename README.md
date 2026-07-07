@@ -36,12 +36,24 @@ Alternativ kannst du in Visual Studio Code die Erweiterung "Live Server" verwend
 
 Für den Store-Weg:
 
-1. Spiel online mit HTTPS bereitstellen, zum Beispiel über GitHub Pages, Netlify, Vercel oder Azure Static Web Apps.
+1. Spiel online mit HTTPS bereitstellen, zum Beispiel über GitHub Pages.
 2. Die URL bei <https://www.pwabuilder.com/> eintragen.
 3. Windows-Paket erzeugen lassen.
 4. Im Microsoft Partner Center einen App-Namen reservieren und das Paket hochladen.
 
 Vor der Einreichung sollten noch PNG-Icons und Store-Screenshots ergänzt werden.
+
+## GitHub Pages
+
+Der Workflow `.github/workflows/pages.yml` veröffentlicht das Spiel automatisch bei GitHub Pages, sobald Änderungen auf `main` hochgeladen werden.
+
+Nach dem ersten Lauf ist die Spiel-URL voraussichtlich:
+
+```text
+https://selena85hh.github.io/Moehrchenmampf/
+```
+
+Falls GitHub Pages noch nicht aktiv ist: Im Repository unter `Settings` -> `Pages` als Quelle `GitHub Actions` auswählen.
 
 ## Aktueller Paketstand
 
