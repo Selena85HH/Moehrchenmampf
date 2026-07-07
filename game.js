@@ -221,9 +221,26 @@ function playSound(name) {
     return;
   }
 
+  if (name === "menu") {
+    sounds.menu.pause();
+    sounds.menu.currentTime = 0;
+    sounds.menu.volume = settings.soundVolume;
+    sounds.menu.play().catch(() => {});
+    return;
+  }
+
   const sound = sounds[name].cloneNode();
   sound.volume = settings.soundVolume;
   sound.play().catch(() => {});
+}
+
+function stopSound(name) {
+  if (!sounds[name]) {
+    return;
+  }
+
+  sounds[name].pause();
+  sounds[name].currentTime = 0;
 }
 
 function startBackgroundMusic() {
@@ -346,6 +363,7 @@ function chooseMode(nextMode) {
 function startMode() {
   clearInterval(gameTimer);
   clearCountdown();
+  stopSound("menu");
   playSound("start");
   startBackgroundMusic();
   menuOpen = false;
@@ -400,6 +418,7 @@ function resumeGame() {
   }
 
   paused = false;
+  stopSound("menu");
   playSound("start");
   startBackgroundMusic();
   updatePauseButton();
@@ -1241,7 +1260,10 @@ pauseButton.addEventListener("click", togglePause);
 document.addEventListener("pointerdown", unlockAudio, { once: true });
 document.addEventListener("keydown", unlockAudio, { once: true });
 document.addEventListener("click", (event) => {
-  if (event.target.closest("button")) {
+  const button = event.target.closest("button");
+  const startsOrPausesGame = button?.closest("#modeButtons") || button === primaryButton || button === pauseButton;
+
+  if (button && !startsOrPausesGame) {
     playSound("menu");
   }
 });
