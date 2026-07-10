@@ -1,9 +1,9 @@
-const CACHE_NAME = "moehrchenmampf-v35";
+const CACHE_NAME = "moehrchenmampf-v36";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
-  "./styles.css?v=35",
-  "./game.js?v=35",
+  "./styles.css?v=36",
+  "./game.js?v=36",
   "./manifest.json",
   "./assets/logo-title.png",
   "./assets/icons/icon-192.png",

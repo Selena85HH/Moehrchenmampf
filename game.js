@@ -141,10 +141,65 @@ let selectedModeIndex = 0;
 let lastGamepadDirectionKey = "";
 let lastGamepadMenuMove = 0;
 let audioUnlocked = false;
+let settingsReturnFocus = null;
 let gamepadButtonState = {
   action: false,
   back: false,
   pause: false
+};
+
+const canvasPalettes = {
+  standard: {
+    fieldLight: "#c9f18d",
+    fieldDark: "#bdea7d",
+    flower: "rgba(255, 255, 255, 0.78)",
+    flowerCenter: "#ffd45e",
+    obstacle: "#a7673a",
+    obstacleLight: "#c88a54",
+    obstacleDark: "#714326",
+    carrotLeaves: "#3f9f4c",
+    carrot: "#ff8b2c",
+    carrotDetail: "rgba(179, 83, 25, 0.45)",
+    bunnyShadow: "rgba(78, 111, 42, 0.16)",
+    bunnyOutline: "#7aa46d",
+    bunnyBodyOutline: "#e8ded2",
+    face: "#263526",
+    whiskers: "#7d6656"
+  },
+  pastel: {
+    fieldLight: "#ddf7b5",
+    fieldDark: "#ccefa4",
+    flower: "rgba(255, 255, 255, 0.86)",
+    flowerCenter: "#ffd78f",
+    obstacle: "#b98a70",
+    obstacleLight: "#d5aa91",
+    obstacleDark: "#805b49",
+    carrotLeaves: "#58a96a",
+    carrot: "#ff9d68",
+    carrotDetail: "rgba(151, 82, 55, 0.42)",
+    bunnyShadow: "rgba(81, 111, 70, 0.13)",
+    bunnyOutline: "#78a67e",
+    bunnyBodyOutline: "#dfd7d0",
+    face: "#35463a",
+    whiskers: "#806d67"
+  },
+  contrast: {
+    fieldLight: "#b7f15d",
+    fieldDark: "#8fd13f",
+    flower: "#ffffff",
+    flowerCenter: "#3b2b00",
+    obstacle: "#43230f",
+    obstacleLight: "#f0b15e",
+    obstacleDark: "#171006",
+    carrotLeaves: "#005f2c",
+    carrot: "#ff5a00",
+    carrotDetail: "#642000",
+    bunnyShadow: "rgba(0, 0, 0, 0.28)",
+    bunnyOutline: "#102b12",
+    bunnyBodyOutline: "#324732",
+    face: "#071208",
+    whiskers: "#23160d"
+  }
 };
 
 const sounds = {
@@ -195,6 +250,25 @@ function applySettings() {
   updateSoundVolumes();
   updateJoystickLabels();
   updateHighscoreText();
+}
+
+function openSettings() {
+  if (running && !paused) {
+    pauseGame();
+  }
+
+  settingsReturnFocus = document.activeElement;
+  applySettings();
+  settingsDialog.classList.remove("hidden");
+  closeSettingsButton.focus({ preventScroll: true });
+}
+
+function closeSettings() {
+  settingsDialog.classList.add("hidden");
+  if (settingsReturnFocus instanceof HTMLElement) {
+    settingsReturnFocus.focus({ preventScroll: true });
+  }
+  settingsReturnFocus = null;
 }
 
 function updateSoundVolumes() {
@@ -264,6 +338,13 @@ function stopBackgroundMusic() {
 function applyVisualSettings() {
   document.body.classList.remove("theme-standard", "theme-pastel", "theme-contrast", "joystick-small", "joystick-medium", "joystick-large");
   document.body.classList.add(`theme-${settings.theme}`, `joystick-${settings.joystickSize}`);
+  if (carrot && players.length > 0) {
+    draw();
+  }
+}
+
+function getCanvasPalette() {
+  return canvasPalettes[settings.theme] || canvasPalettes.standard;
 }
 
 function updateJoystickLabels() {
@@ -394,10 +475,11 @@ function startMode() {
 }
 
 function pauseGame() {
-  if (!running || paused || countdownActive) {
+  if (!running || paused) {
     return;
   }
 
+  clearCountdown();
   paused = true;
   playSound("pause");
   pauseBackgroundMusic();
@@ -442,7 +524,7 @@ function togglePause() {
 function updatePauseButton() {
   pauseButton.textContent = paused ? "▶" : "Ⅱ";
   pauseButton.setAttribute("aria-label", paused ? "Spiel fortsetzen" : "Spiel pausieren");
-  pauseButton.disabled = !running || countdownActive;
+  pauseButton.disabled = !running;
 }
 
 function beginCountdown(onComplete) {
@@ -519,7 +601,7 @@ function tick() {
   }));
 
   moves.forEach((move) => {
-    move.crashed = hasCollision(move.player, move.head);
+    move.crashed = hasCollision(move.player, move.head, moves);
   });
   markHeadOnCollisions(moves);
 
@@ -554,7 +636,7 @@ function getNextHead(player) {
   return { x: head.x + player.direction.x, y: head.y + player.direction.y };
 }
 
-function hasCollision(player, cell) {
+function hasCollision(player, cell, moves) {
   if (cell.x < 0 || cell.y < 0 || cell.x >= tileCount || cell.y >= tileCount) {
     return true;
   }
@@ -563,12 +645,16 @@ function hasCollision(player, cell) {
     return true;
   }
 
-  return players.some((otherPlayer) =>
-    otherPlayer.body.some((part, index) => {
+  return players.some((otherPlayer) => {
+    const otherMove = moves.find((move) => move.player.id === otherPlayer.id);
+    const tailMovesAway = otherPlayer.alive && otherMove && !otherMove.eats;
+
+    return otherPlayer.body.some((part, index) => {
       const isOwnHead = otherPlayer.id === player.id && index === 0;
-      return !isOwnHead && sameCell(part, cell);
-    })
-  );
+      const isVacatingTail = tailMovesAway && index === otherPlayer.body.length - 1;
+      return !isOwnHead && !isVacatingTail && sameCell(part, cell);
+    });
+  });
 }
 
 function markHeadOnCollisions(moves) {
@@ -841,19 +927,22 @@ function addInfoItem(text, current) {
 function draw() {
   drawField();
   getObstacles().forEach(drawObstacle);
-  drawCarrot(carrot);
+  if (carrot) {
+    drawCarrot(carrot);
+  }
   players.forEach((player) => {
     player.body.forEach((part, index) => drawBunnyPart(part, index, player));
   });
 }
 
 function drawField() {
-  context.fillStyle = "#c9f18d";
+  const palette = getCanvasPalette();
+  context.fillStyle = palette.fieldLight;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   for (let y = 0; y < tileCount; y += 1) {
     for (let x = 0; x < tileCount; x += 1) {
-      context.fillStyle = (x + y) % 2 === 0 ? "#c9f18d" : "#bdea7d";
+      context.fillStyle = (x + y) % 2 === 0 ? palette.fieldLight : palette.fieldDark;
       context.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
 
       if ((x * 3 + y * 5) % 17 === 0) {
@@ -864,10 +953,11 @@ function drawField() {
 }
 
 function drawTinyFlower(x, y) {
+  const palette = getCanvasPalette();
   const centerX = x * tileSize + tileSize * 0.72;
   const centerY = y * tileSize + tileSize * 0.28;
 
-  context.fillStyle = "rgba(255, 255, 255, 0.78)";
+  context.fillStyle = palette.flower;
   context.beginPath();
   context.arc(centerX - 2, centerY, 2.2, 0, Math.PI * 2);
   context.arc(centerX + 2, centerY, 2.2, 0, Math.PI * 2);
@@ -875,41 +965,43 @@ function drawTinyFlower(x, y) {
   context.arc(centerX, centerY + 2, 2.2, 0, Math.PI * 2);
   context.fill();
 
-  context.fillStyle = "#ffd45e";
+  context.fillStyle = palette.flowerCenter;
   context.beginPath();
   context.arc(centerX, centerY, 1.7, 0, Math.PI * 2);
   context.fill();
 }
 
 function drawObstacle(cell) {
+  const palette = getCanvasPalette();
   const x = cell.x * tileSize;
   const y = cell.y * tileSize;
 
-  context.fillStyle = "#a7673a";
+  context.fillStyle = palette.obstacle;
   roundRect(x + 4, y + 7, tileSize - 8, tileSize - 13, 7);
   context.fill();
 
-  context.fillStyle = "#c88a54";
+  context.fillStyle = palette.obstacleLight;
   roundRect(x + 8, y + 11, tileSize - 16, 5, 3);
   context.fill();
 
-  context.fillStyle = "#714326";
+  context.fillStyle = palette.obstacleDark;
   roundRect(x + 8, y + 21, tileSize - 16, 4, 3);
   context.fill();
 }
 
 function drawCarrot(cell) {
+  const palette = getCanvasPalette();
   const centerX = cell.x * tileSize + tileSize / 2;
   const centerY = cell.y * tileSize + tileSize / 2;
 
-  context.fillStyle = "#3f9f4c";
+  context.fillStyle = palette.carrotLeaves;
   context.beginPath();
   context.ellipse(centerX - 7, centerY - 9, 4, 11, -0.75, 0, Math.PI * 2);
   context.ellipse(centerX, centerY - 11, 4, 12, 0, 0, Math.PI * 2);
   context.ellipse(centerX + 7, centerY - 9, 4, 11, 0.75, 0, Math.PI * 2);
   context.fill();
 
-  context.fillStyle = "#ff8b2c";
+  context.fillStyle = palette.carrot;
   context.beginPath();
   context.moveTo(centerX - 10, centerY - 1);
   context.quadraticCurveTo(centerX, centerY - 7, centerX + 10, centerY - 1);
@@ -918,7 +1010,7 @@ function drawCarrot(cell) {
   context.closePath();
   context.fill();
 
-  context.strokeStyle = "rgba(179, 83, 25, 0.45)";
+  context.strokeStyle = palette.carrotDetail;
   context.lineWidth = 2;
   context.beginPath();
   context.moveTo(centerX - 5, centerY + 3);
@@ -929,10 +1021,11 @@ function drawCarrot(cell) {
 }
 
 function drawBunnyPart(cell, index, player) {
+  const palette = getCanvasPalette();
   const centerX = cell.x * tileSize + tileSize / 2;
   const centerY = cell.y * tileSize + tileSize / 2;
 
-  context.fillStyle = "rgba(78, 111, 42, 0.16)";
+  context.fillStyle = palette.bunnyShadow;
   context.beginPath();
   context.ellipse(centerX + 2, centerY + 8, tileSize * 0.33, tileSize * 0.17, 0, 0, Math.PI * 2);
   context.fill();
@@ -942,7 +1035,7 @@ function drawBunnyPart(cell, index, player) {
   context.arc(centerX, centerY, tileSize * 0.38, 0, Math.PI * 2);
   context.fill();
 
-  context.strokeStyle = index === 0 ? "#7aa46d" : "#e8ded2";
+  context.strokeStyle = index === 0 ? palette.bunnyOutline : palette.bunnyBodyOutline;
   context.lineWidth = 2;
   context.stroke();
 
@@ -952,6 +1045,7 @@ function drawBunnyPart(cell, index, player) {
 }
 
 function drawBunnyFace(centerX, centerY, colors) {
+  const palette = getCanvasPalette();
   context.fillStyle = colors.head;
   context.beginPath();
   context.ellipse(centerX - 8, centerY - 16, 5, 14, -0.35, 0, Math.PI * 2);
@@ -964,7 +1058,7 @@ function drawBunnyFace(centerX, centerY, colors) {
   context.ellipse(centerX + 8, centerY - 16, 2, 8, 0.35, 0, Math.PI * 2);
   context.fill();
 
-  context.fillStyle = "#263526";
+  context.fillStyle = palette.face;
   context.beginPath();
   context.arc(centerX - 5, centerY - 2, 2, 0, Math.PI * 2);
   context.arc(centerX + 5, centerY - 2, 2, 0, Math.PI * 2);
@@ -975,7 +1069,7 @@ function drawBunnyFace(centerX, centerY, colors) {
   context.arc(centerX, centerY + 4, 2.5, 0, Math.PI * 2);
   context.fill();
 
-  context.strokeStyle = "#7d6656";
+  context.strokeStyle = palette.whiskers;
   context.lineWidth = 1.5;
   context.beginPath();
   context.moveTo(centerX - 11, centerY + 5);
@@ -1232,10 +1326,9 @@ function activateGamepadAction() {
 
 function toggleSettingsWithGamepad() {
   if (settingsDialog.classList.contains("hidden")) {
-    applySettings();
-    settingsDialog.classList.remove("hidden");
+    openSettings();
   } else {
-    settingsDialog.classList.add("hidden");
+    closeSettings();
   }
 }
 
@@ -1269,17 +1362,16 @@ document.addEventListener("click", (event) => {
 });
 
 settingsButton.addEventListener("click", () => {
-  applySettings();
-  settingsDialog.classList.remove("hidden");
+  openSettings();
 });
 
 closeSettingsButton.addEventListener("click", () => {
-  settingsDialog.classList.add("hidden");
+  closeSettings();
 });
 
 settingsDialog.addEventListener("click", (event) => {
   if (event.target === settingsDialog) {
-    settingsDialog.classList.add("hidden");
+    closeSettings();
   }
 });
 
@@ -1310,7 +1402,7 @@ settingsForm.addEventListener("submit", (event) => {
     updateHud();
     renderInfoPanel();
   }
-  settingsDialog.classList.add("hidden");
+  closeSettings();
 });
 
 resetHighscoreButton.addEventListener("click", () => {
@@ -1350,7 +1442,19 @@ soundVolumeInput.addEventListener("input", () => {
 
 document.addEventListener("keydown", (event) => {
   if (event.code === "Escape" && !settingsDialog.classList.contains("hidden")) {
-    settingsDialog.classList.add("hidden");
+    closeSettings();
+  }
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && running && !paused) {
+    pauseGame();
+  }
+});
+
+window.addEventListener("blur", () => {
+  if (running && !paused) {
+    pauseGame();
   }
 });
 
