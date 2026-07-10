@@ -17,6 +17,7 @@ const messageTitle = document.querySelector("#messageTitle");
 const messageText = document.querySelector("#messageText");
 const modeButtons = document.querySelector("#modeButtons");
 const primaryButton = document.querySelector("#primaryButton");
+const secondaryOverlayButton = document.querySelector("#secondaryOverlayButton");
 const pauseButton = document.querySelector("#pauseButton");
 const scoreboard = document.querySelector(".scoreboard");
 const playerTwoJoystick = document.querySelector('[data-player-pad="p2"]');
@@ -31,12 +32,15 @@ const themeSelect = document.querySelector("#themeSelect");
 const joystickSizeSelect = document.querySelector("#joystickSizeSelect");
 const soundEnabledInput = document.querySelector("#soundEnabledInput");
 const soundVolumeInput = document.querySelector("#soundVolumeInput");
+const soundVolumeValue = document.querySelector("#soundVolumeValue");
 const settingsHighscore = document.querySelector("#settingsHighscore");
 const resetHighscoreButton = document.querySelector("#resetHighscoreButton");
+const gameVersionElement = document.querySelector("#gameVersion");
 
 const tileCount = 20;
 const tileSize = canvas.width / tileCount;
 const multiplayerTarget = 10;
+const gameVersion = "38";
 const settingsStorageKey = "moehrchenmampf-settings";
 const modeOrder = ["levels", "endless", "multiplayer"];
 const defaultSettings = {
@@ -381,6 +385,8 @@ function applySettings() {
   joystickSizeSelect.value = settings.joystickSize;
   soundEnabledInput.checked = settings.soundEnabled;
   soundVolumeInput.value = String(Math.round(settings.soundVolume * 100));
+  gameVersionElement.textContent = `Version ${gameVersion}`;
+  updateVolumeSlider();
   updateSoundVolumes();
   updateJoystickLabels();
   updateHighscoreText();
@@ -410,6 +416,12 @@ function updateSoundVolumes() {
     sound.volume = settings.soundVolume;
   });
   backgroundMusic.volume = settings.soundVolume * 0.28;
+}
+
+function updateVolumeSlider() {
+  const percentage = Math.round(settings.soundVolume * 100);
+  soundVolumeInput.style.setProperty("--volume-percent", `${percentage}%`);
+  soundVolumeValue.textContent = `${percentage} %`;
 }
 
 function unlockAudio() {
@@ -637,6 +649,7 @@ function pauseGame() {
   messageText.textContent = "Das Häschen wartet kurz. Weiter geht es, wenn du bereit bist.";
   primaryButton.textContent = "Weiter";
   primaryButton.classList.remove("hidden");
+  secondaryOverlayButton.classList.add("hidden");
   setModeButtonsVisible(false);
   messageOverlay.classList.remove("hidden");
   updatePauseButton();
@@ -680,6 +693,7 @@ function beginCountdown(onComplete) {
   countdownActive = true;
   setOverlayMode("countdown");
   primaryButton.classList.add("hidden");
+  secondaryOverlayButton.classList.add("hidden");
   modeButtons.classList.add("hidden");
   messageOverlay.classList.remove("hidden");
   updatePauseButton();
@@ -847,7 +861,7 @@ function evaluateLevelMode() {
     playSound("levelComplete");
     currentLevelIndex = 0;
     score = 0;
-    showOverlay("Gewonnen!", "Das Häschen hat das große Möhrchenfest gemeistert.", "Nochmal spielen");
+    showLevelResultOverlay("Gewonnen!", "Das Häschen hat das große Möhrchenfest gemeistert.", "Nochmal spielen");
     updateHud();
     renderInfoPanel();
     return;
@@ -855,7 +869,7 @@ function evaluateLevelMode() {
 
   currentLevelIndex += 1;
   playSound("levelComplete");
-  showOverlay("Level geschafft!", "Das nächste Feld wartet schon.", "Weiterhoppeln");
+  showLevelResultOverlay("Level geschafft!", "Das nächste Feld wartet schon.", "Weiterhoppeln");
   updateHud();
   renderInfoPanel();
 }
@@ -925,9 +939,22 @@ function showOverlay(title, text, buttonText) {
   messageText.textContent = text;
   primaryButton.textContent = buttonText;
   primaryButton.classList.remove("hidden");
+  secondaryOverlayButton.classList.add("hidden");
   setModeButtonsVisible(true);
   messageOverlay.classList.remove("hidden");
   updateSelectedModeButton();
+}
+
+function showLevelResultOverlay(title, text, buttonText) {
+  setOverlayMode("");
+  messageTitle.textContent = title;
+  messageText.textContent = text;
+  primaryButton.textContent = buttonText;
+  primaryButton.classList.remove("hidden");
+  secondaryOverlayButton.textContent = "Zurück zum Menü";
+  secondaryOverlayButton.classList.remove("hidden");
+  setModeButtonsVisible(false);
+  messageOverlay.classList.remove("hidden");
 }
 
 function showMenu() {
@@ -943,6 +970,7 @@ function showMenu() {
   players = [createLevelPlayer()];
   carrot = placeCarrot();
   primaryButton.classList.add("hidden");
+  secondaryOverlayButton.classList.add("hidden");
   setModeButtonsVisible(true);
   modeLabel.textContent = "Willkommen";
   levelBadge.classList.add("hidden");
@@ -1654,6 +1682,8 @@ document.addEventListener("click", (event) => {
   }
 });
 
+secondaryOverlayButton.addEventListener("click", showMenu);
+
 settingsButton.addEventListener("click", () => {
   openSettings();
 });
@@ -1729,6 +1759,7 @@ soundEnabledInput.addEventListener("change", () => {
 
 soundVolumeInput.addEventListener("input", () => {
   settings.soundVolume = Number(soundVolumeInput.value) / 100;
+  updateVolumeSlider();
   updateSoundVolumes();
   saveSettings();
 });
