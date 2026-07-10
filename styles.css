@@ -302,6 +302,188 @@ canvas {
   font-weight: 900;
 }
 
+.final-surprise {
+  position: relative;
+  width: min(280px, 78vw);
+  height: 170px;
+  margin: 2px auto 18px;
+  pointer-events: none;
+}
+
+.victory-card {
+  position: absolute;
+  inset: 34px 26px 12px;
+  overflow: hidden;
+  border: 4px solid rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.9) 0 12%, transparent 13%),
+    linear-gradient(180deg, #7bdcff 0 48%, #86df76 49% 100%);
+  box-shadow: 0 16px 30px rgba(89, 91, 34, 0.24);
+  animation: victory-pop 640ms cubic-bezier(0.2, 1.45, 0.36, 1) both;
+}
+
+.victory-sun,
+.victory-bunny,
+.victory-carrot,
+.victory-ribbon {
+  position: absolute;
+  display: block;
+}
+
+.victory-sun {
+  top: 12px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ffd45e;
+  box-shadow: 0 0 0 9px rgba(255, 212, 94, 0.28);
+}
+
+.victory-bunny {
+  left: 46px;
+  bottom: 23px;
+  width: 46px;
+  height: 38px;
+  border-radius: 56% 56% 44% 44%;
+  background: #fff7f2;
+  box-shadow:
+    -12px -23px 0 -7px #fff7f2,
+    12px -24px 0 -8px #fff7f2,
+    8px 7px 0 -2px rgba(107, 139, 86, 0.18);
+}
+
+.victory-bunny::before,
+.victory-bunny::after {
+  position: absolute;
+  content: "";
+  border-radius: 50%;
+}
+
+.victory-bunny::before {
+  top: 12px;
+  right: 9px;
+  width: 5px;
+  height: 5px;
+  background: #3f322b;
+}
+
+.victory-bunny::after {
+  left: -8px;
+  bottom: -2px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+}
+
+.victory-carrot {
+  right: 58px;
+  bottom: 24px;
+  width: 32px;
+  height: 66px;
+  border-radius: 42% 42% 54% 54%;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 11px, rgba(179, 83, 25, 0.32) 12px 14px),
+    linear-gradient(160deg, #ffb238 0%, #ff8128 72%);
+  transform: rotate(18deg);
+  box-shadow: 0 8px 0 rgba(107, 139, 86, 0.16);
+}
+
+.victory-carrot::before {
+  position: absolute;
+  top: -26px;
+  left: 4px;
+  width: 24px;
+  height: 32px;
+  content: "";
+  background:
+    radial-gradient(ellipse at 50% 100%, #3f9f4c 0 60%, transparent 62%),
+    radial-gradient(ellipse at 15% 100%, #7bdc6a 0 52%, transparent 54%),
+    radial-gradient(ellipse at 85% 100%, #7bdc6a 0 52%, transparent 54%);
+}
+
+.victory-ribbon {
+  left: 50%;
+  bottom: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #fff6cf;
+  color: #8a4a14;
+  font-size: 0.82rem;
+  font-weight: 900;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 10px rgba(89, 91, 34, 0.16);
+}
+
+.carrot-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.confetti-carrot,
+.confetti-spark {
+  position: absolute;
+  top: -20px;
+  left: var(--confetti-x);
+  animation: carrot-confetti-fall 1.7s var(--confetti-delay) ease-out both;
+}
+
+.confetti-carrot {
+  width: 10px;
+  height: 18px;
+  border-radius: 45% 45% 55% 55%;
+  background: #ff8b2c;
+}
+
+.confetti-carrot::before {
+  position: absolute;
+  top: -7px;
+  left: 1px;
+  width: 8px;
+  height: 8px;
+  content: "";
+  background:
+    radial-gradient(ellipse at 20% 100%, #70c859 0 48%, transparent 52%),
+    radial-gradient(ellipse at 80% 100%, #3f9f4c 0 48%, transparent 52%);
+}
+
+.confetti-spark {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--confetti-color);
+}
+
+@keyframes victory-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.76) translateY(16px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes carrot-confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -20px, 0) rotate(0deg);
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--confetti-drift), 185px, 0) rotate(var(--confetti-spin));
+  }
+}
+
 #primaryButton {
   margin-top: 18px;
   padding: 14px 24px;

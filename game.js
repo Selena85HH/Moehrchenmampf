@@ -22,6 +22,8 @@ const pauseButton = document.querySelector("#pauseButton");
 const scoreboard = document.querySelector(".scoreboard");
 const playerTwoJoystick = document.querySelector('[data-player-pad="p2"]');
 const highscoreSummary = document.querySelector("#highscoreSummary");
+const finalSurprise = document.querySelector("#finalSurprise");
+const carrotConfetti = document.querySelector("#carrotConfetti");
 const settingsButton = document.querySelector("#settingsButton");
 const settingsDialog = document.querySelector("#settingsDialog");
 const closeSettingsButton = document.querySelector("#closeSettingsButton");
@@ -40,7 +42,7 @@ const gameVersionElement = document.querySelector("#gameVersion");
 const tileCount = 20;
 const tileSize = canvas.width / tileCount;
 const multiplayerTarget = 10;
-const gameVersion = "38";
+const gameVersion = "39";
 const settingsStorageKey = "moehrchenmampf-settings";
 const modeOrder = ["levels", "endless", "multiplayer"];
 const defaultSettings = {
@@ -150,6 +152,7 @@ let selectedModeIndex = 0;
 let lastGamepadDirectionKey = "";
 let lastGamepadMenuMove = 0;
 let audioUnlocked = false;
+let audioContext;
 let settingsReturnFocus = null;
 let gamepadButtonState = {
   action: false,
@@ -430,6 +433,10 @@ function unlockAudio() {
   }
 
   audioUnlocked = true;
+  const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+  if (!audioContext && AudioContextConstructor) {
+    audioContext = new AudioContextConstructor();
+  }
   Object.values(sounds).forEach((sound) => {
     sound.load();
   });
@@ -452,6 +459,43 @@ function playSound(name) {
   const sound = sounds[name].cloneNode();
   sound.volume = settings.soundVolume;
   sound.play().catch(() => {});
+}
+
+function playFinalVictorySound() {
+  const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+  if (!settings.soundEnabled || !audioUnlocked || !AudioContextConstructor) {
+    return;
+  }
+
+  if (!audioContext) {
+    audioContext = new AudioContextConstructor();
+  }
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume().catch(() => {});
+  }
+
+  const start = audioContext.currentTime;
+  const notes = [
+    { frequency: 523.25, offset: 0, duration: 0.16 },
+    { frequency: 659.25, offset: 0.14, duration: 0.18 },
+    { frequency: 783.99, offset: 0.28, duration: 0.2 },
+    { frequency: 1046.5, offset: 0.46, duration: 0.36 }
+  ];
+
+  notes.forEach(({ frequency, offset, duration }) => {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(frequency, start + offset);
+    gain.gain.setValueAtTime(0, start + offset);
+    gain.gain.linearRampToValueAtTime(settings.soundVolume * 0.22, start + offset + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + offset + duration);
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    oscillator.start(start + offset);
+    oscillator.stop(start + offset + duration + 0.02);
+  });
 }
 
 function stopSound(name) {
@@ -692,6 +736,7 @@ function beginCountdown(onComplete) {
   clearCountdown();
   countdownActive = true;
   setOverlayMode("countdown");
+  hideFinalSurprise();
   primaryButton.classList.add("hidden");
   secondaryOverlayButton.classList.add("hidden");
   modeButtons.classList.add("hidden");
@@ -859,9 +904,10 @@ function evaluateLevelMode() {
 
   if (currentLevelIndex === levels.length - 1) {
     playSound("levelComplete");
+    playFinalVictorySound();
     currentLevelIndex = 0;
     score = 0;
-    showLevelResultOverlay("Gewonnen!", "Das Häschen hat das große Möhrchenfest gemeistert.", "Nochmal spielen");
+    showLevelResultOverlay("Gewonnen!", "Das Häschen hat das große Möhrchenfest gemeistert.", "Nochmal spielen", true);
     updateHud();
     renderInfoPanel();
     return;
@@ -937,6 +983,7 @@ function showOverlay(title, text, buttonText) {
   setOverlayMode("");
   messageTitle.textContent = title;
   messageText.textContent = text;
+  hideFinalSurprise();
   primaryButton.textContent = buttonText;
   primaryButton.classList.remove("hidden");
   secondaryOverlayButton.classList.add("hidden");
@@ -945,16 +992,44 @@ function showOverlay(title, text, buttonText) {
   updateSelectedModeButton();
 }
 
-function showLevelResultOverlay(title, text, buttonText) {
+function showLevelResultOverlay(title, text, buttonText, showFinalSurprise = false) {
   setOverlayMode("");
   messageTitle.textContent = title;
   messageText.textContent = text;
+  if (showFinalSurprise) {
+    revealFinalSurprise();
+  } else {
+    hideFinalSurprise();
+  }
   primaryButton.textContent = buttonText;
   primaryButton.classList.remove("hidden");
   secondaryOverlayButton.textContent = "Zurück zum Menü";
   secondaryOverlayButton.classList.remove("hidden");
   setModeButtonsVisible(false);
   messageOverlay.classList.remove("hidden");
+}
+
+function revealFinalSurprise() {
+  finalSurprise.classList.remove("hidden");
+  carrotConfetti.replaceChildren();
+  const colors = ["#ff8b2c", "#ffd45e", "#7bdc6a", "#ff6fae", "#7bc8ff", "#b57cff"];
+
+  for (let index = 0; index < 42; index += 1) {
+    const piece = document.createElement("span");
+    const isCarrot = index % 3 === 0;
+    piece.className = isCarrot ? "confetti-carrot" : "confetti-spark";
+    piece.style.setProperty("--confetti-x", `${Math.random() * 100}%`);
+    piece.style.setProperty("--confetti-delay", `${Math.random() * 0.55}s`);
+    piece.style.setProperty("--confetti-drift", `${Math.random() * 120 - 60}px`);
+    piece.style.setProperty("--confetti-spin", `${Math.random() * 520 + 220}deg`);
+    piece.style.setProperty("--confetti-color", colors[index % colors.length]);
+    carrotConfetti.appendChild(piece);
+  }
+}
+
+function hideFinalSurprise() {
+  finalSurprise.classList.add("hidden");
+  carrotConfetti.replaceChildren();
 }
 
 function showMenu() {
@@ -971,6 +1046,7 @@ function showMenu() {
   carrot = placeCarrot();
   primaryButton.classList.add("hidden");
   secondaryOverlayButton.classList.add("hidden");
+  hideFinalSurprise();
   setModeButtonsVisible(true);
   modeLabel.textContent = "Willkommen";
   levelBadge.classList.add("hidden");

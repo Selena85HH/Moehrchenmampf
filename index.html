@@ -8,7 +8,7 @@
     <title>Möhrchenmampf</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" type="image/png" href="assets/icons/favicon.png" />
-    <link rel="stylesheet" href="styles.css?v=38" />
+    <link rel="stylesheet" href="styles.css?v=39" />
   </head>
   <body>
     <main class="app-shell">
@@ -37,6 +37,15 @@
               <h2 id="messageTitle">Willkommen bei Möhrchenmampf</h2>
               <p id="messageText">Wähle einen Spielmodus und hopp dann los.</p>
               <p id="highscoreSummary" class="highscore-summary"></p>
+              <div id="finalSurprise" class="final-surprise hidden" aria-hidden="true">
+                <div class="victory-card" aria-hidden="true">
+                  <span class="victory-sun"></span>
+                  <span class="victory-bunny"></span>
+                  <span class="victory-carrot"></span>
+                  <span class="victory-ribbon">Finale!</span>
+                </div>
+                <div id="carrotConfetti" class="carrot-confetti" aria-hidden="true"></div>
+              </div>
               <div id="modeButtons" class="mode-buttons">
                 <button type="button" data-mode="levels">Level-Spiel</button>
                 <button type="button" data-mode="endless">Endlos-Spiel</button>
@@ -127,7 +136,7 @@
 
           <div class="settings-version" aria-label="Spielversion">
             <span>Spielversion</span>
-            <strong id="gameVersion">Version 38</strong>
+            <strong id="gameVersion">Version 39</strong>
           </div>
 
           <div class="settings-actions">
@@ -138,6 +147,6 @@
       </div>
     </div>
 
-    <script src="game.js?v=38"></script>
+    <script src="game.js?v=39"></script>
   </body>
 </html>
