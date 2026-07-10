@@ -42,7 +42,7 @@ const gameVersionElement = document.querySelector("#gameVersion");
 const tileCount = 20;
 const tileSize = canvas.width / tileCount;
 const multiplayerTarget = 10;
-const gameVersion = "39";
+const gameVersion = "40";
 const settingsStorageKey = "moehrchenmampf-settings";
 const modeOrder = ["levels", "endless", "multiplayer"];
 const defaultSettings = {
@@ -891,7 +891,7 @@ function evaluateLevelMode() {
     playSound("gameOver");
     score = levelStartScore;
     updateHud();
-    endGame("Verheddert!", "Das Häschen braucht noch einen Versuch.", "Level neu starten");
+    endLevelGame("Verheddert!", "Das Häschen braucht noch einen Versuch.", "Level erneut versuchen");
     return;
   }
 
@@ -977,6 +977,17 @@ function endGame(title, text, buttonText) {
   draw();
   updatePauseButton();
   showOverlay(title, text, buttonText);
+}
+
+function endLevelGame(title, text, buttonText) {
+  clearInterval(gameTimer);
+  clearCountdown();
+  stopBackgroundMusic();
+  running = false;
+  paused = false;
+  draw();
+  updatePauseButton();
+  showLevelResultOverlay(title, text, buttonText);
 }
 
 function showOverlay(title, text, buttonText) {
