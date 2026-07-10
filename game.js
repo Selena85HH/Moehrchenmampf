@@ -58,7 +58,8 @@ let settings = loadSettings();
 const levels = [
   {
     name: "Sonnige Wiese",
-    description: "Ein offenes Feld zum Eingewoehnen.",
+    description: "Ein offenes Feld zum Eingewöhnen.",
+    visualTheme: "meadow",
     target: 10,
     speed: 160,
     obstacles: []
@@ -66,6 +67,7 @@ const levels = [
   {
     name: "Gartenbeete",
     description: "Kleine Beete machen die Wege spannender.",
+    visualTheme: "garden",
     target: 15,
     speed: 145,
     obstacles: [
@@ -76,6 +78,7 @@ const levels = [
   {
     name: "Schmetterlingsfeld",
     description: "Mehr Hindernisse und ein flotteres Hoppeln.",
+    visualTheme: "butterfly",
     target: 20,
     speed: 130,
     obstacles: [
@@ -85,8 +88,9 @@ const levels = [
     ]
   },
   {
-    name: "Enger Gemuesegarten",
+    name: "Enger Gemüsegarten",
     description: "Schmale Wege fordern gutes Vorausdenken.",
+    visualTheme: "vegetable",
     target: 25,
     speed: 118,
     obstacles: [
@@ -99,6 +103,7 @@ const levels = [
   {
     name: "Das große Möhrchenfest",
     description: "Das Finale ist bunt, schnell und ziemlich eng.",
+    visualTheme: "festival",
     target: 30,
     speed: 105,
     obstacles: [
@@ -154,6 +159,8 @@ const canvasPalettes = {
     fieldDark: "#bdea7d",
     flower: "rgba(255, 255, 255, 0.78)",
     flowerCenter: "#ffd45e",
+    decorationPrimary: "rgba(255, 255, 255, 0.78)",
+    decorationSecondary: "#ffd45e",
     obstacle: "#a7673a",
     obstacleLight: "#c88a54",
     obstacleDark: "#714326",
@@ -171,6 +178,8 @@ const canvasPalettes = {
     fieldDark: "#ccefa4",
     flower: "rgba(255, 255, 255, 0.86)",
     flowerCenter: "#ffd78f",
+    decorationPrimary: "rgba(255, 255, 255, 0.86)",
+    decorationSecondary: "#ffd78f",
     obstacle: "#b98a70",
     obstacleLight: "#d5aa91",
     obstacleDark: "#805b49",
@@ -188,6 +197,8 @@ const canvasPalettes = {
     fieldDark: "#8fd13f",
     flower: "#ffffff",
     flowerCenter: "#3b2b00",
+    decorationPrimary: "#ffffff",
+    decorationSecondary: "#17210a",
     obstacle: "#43230f",
     obstacleLight: "#f0b15e",
     obstacleDark: "#171006",
@@ -199,6 +210,129 @@ const canvasPalettes = {
     bunnyBodyOutline: "#324732",
     face: "#071208",
     whiskers: "#23160d"
+  }
+};
+
+const levelVisualPalettes = {
+  meadow: {
+    standard: {
+      fieldLight: "#c9f18d",
+      fieldDark: "#bdea7d",
+      decorationPrimary: "rgba(255, 255, 255, 0.9)",
+      decorationSecondary: "#ffd45e",
+      obstacle: "#a7673a",
+      obstacleLight: "#c88a54",
+      obstacleDark: "#714326",
+      carrotLeaves: "#3f9f4c",
+      carrot: "#ff8b2c"
+    },
+    pastel: {
+      fieldLight: "#ddf7b5",
+      fieldDark: "#ccefa4",
+      decorationPrimary: "#fffdf7",
+      decorationSecondary: "#ffd995",
+      obstacle: "#b98a70",
+      obstacleLight: "#d5aa91",
+      obstacleDark: "#805b49",
+      carrotLeaves: "#58a96a",
+      carrot: "#ff9d68"
+    }
+  },
+  garden: {
+    standard: {
+      fieldLight: "#d9c98c",
+      fieldDark: "#c4af6e",
+      decorationPrimary: "#2f7d3b",
+      decorationSecondary: "#8bd34f",
+      obstacle: "#704126",
+      obstacleLight: "#ae7245",
+      obstacleDark: "#3f2718",
+      carrotLeaves: "#2f7b38",
+      carrot: "#f47d25"
+    },
+    pastel: {
+      fieldLight: "#eadcad",
+      fieldDark: "#dac58e",
+      decorationPrimary: "#559a61",
+      decorationSecondary: "#b0df80",
+      obstacle: "#956d55",
+      obstacleLight: "#c69a78",
+      obstacleDark: "#6d4d3b",
+      carrotLeaves: "#65a36a",
+      carrot: "#f6a06f"
+    }
+  },
+  butterfly: {
+    standard: {
+      fieldLight: "#d1c0f5",
+      fieldDark: "#b89fe8",
+      decorationPrimary: "#fff176",
+      decorationSecondary: "#6b45a5",
+      obstacle: "#66517e",
+      obstacleLight: "#a087bd",
+      obstacleDark: "#41314f",
+      carrotLeaves: "#26855a",
+      carrot: "#ff8748"
+    },
+    pastel: {
+      fieldLight: "#e5daf8",
+      fieldDark: "#d3c3ef",
+      decorationPrimary: "#fff5ad",
+      decorationSecondary: "#9b7ac2",
+      obstacle: "#8a789d",
+      obstacleLight: "#baa8cb",
+      obstacleDark: "#685878",
+      carrotLeaves: "#64a783",
+      carrot: "#ffa17a"
+    }
+  },
+  vegetable: {
+    standard: {
+      fieldLight: "#86b978",
+      fieldDark: "#6ca260",
+      decorationPrimary: "#e0ed87",
+      decorationSecondary: "#285e32",
+      obstacle: "#5e472f",
+      obstacleLight: "#99744d",
+      obstacleDark: "#35281c",
+      carrotLeaves: "#174f2c",
+      carrot: "#ff791f"
+    },
+    pastel: {
+      fieldLight: "#afd0a5",
+      fieldDark: "#94ba89",
+      decorationPrimary: "#edf2b5",
+      decorationSecondary: "#56805c",
+      obstacle: "#806b57",
+      obstacleLight: "#ae9072",
+      obstacleDark: "#5c4b3d",
+      carrotLeaves: "#4c7c5a",
+      carrot: "#f7a06c"
+    }
+  },
+  festival: {
+    standard: {
+      fieldLight: "#ffdc72",
+      fieldDark: "#f6b85f",
+      decorationPrimary: "#e83570",
+      decorationSecondary: "#2879d9",
+      obstacle: "#7f3c70",
+      obstacleLight: "#ef6689",
+      obstacleDark: "#492651",
+      carrotLeaves: "#087b68",
+      carrot: "#ff641c"
+    },
+    pastel: {
+      fieldLight: "#ffe9a8",
+      fieldDark: "#f7ce94",
+      decorationPrimary: "#ed82a4",
+      decorationSecondary: "#78a9df",
+      obstacle: "#9b6e94",
+      obstacleLight: "#e89caf",
+      obstacleDark: "#74536f",
+      carrotLeaves: "#559f8d",
+      carrot: "#f99a6f"
+    }
   }
 };
 
@@ -344,7 +478,21 @@ function applyVisualSettings() {
 }
 
 function getCanvasPalette() {
-  return canvasPalettes[settings.theme] || canvasPalettes.standard;
+  const basePalette = canvasPalettes[settings.theme] || canvasPalettes.standard;
+  if (mode !== "levels" || settings.theme === "contrast") {
+    return basePalette;
+  }
+
+  const visualTheme = getLevelVisualTheme();
+  const variant = settings.theme === "pastel" ? "pastel" : "standard";
+  return {
+    ...basePalette,
+    ...(levelVisualPalettes[visualTheme]?.[variant] || {})
+  };
+}
+
+function getLevelVisualTheme() {
+  return mode === "levels" ? levels[currentLevelIndex]?.visualTheme || "meadow" : "meadow";
 }
 
 function updateJoystickLabels() {
@@ -946,18 +1094,41 @@ function drawField() {
       context.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
 
       if ((x * 3 + y * 5) % 17 === 0) {
-        drawTinyFlower(x, y);
+        drawTileDecoration(x, y);
       }
     }
   }
 }
 
+function drawTileDecoration(x, y) {
+  const visualTheme = getLevelVisualTheme();
+  if (visualTheme === "garden") {
+    drawTinySprout(x, y);
+  } else if (visualTheme === "butterfly") {
+    drawTinyButterfly(x, y);
+  } else if (visualTheme === "vegetable") {
+    drawTinyVegetable(x, y);
+  } else if (visualTheme === "festival") {
+    drawTinyConfetti(x, y);
+  } else {
+    drawTinyFlower(x, y);
+  }
+}
+
+function getDecorationCenter(x, y) {
+  return {
+    x: x * tileSize + tileSize * 0.72,
+    y: y * tileSize + tileSize * 0.28
+  };
+}
+
 function drawTinyFlower(x, y) {
   const palette = getCanvasPalette();
-  const centerX = x * tileSize + tileSize * 0.72;
-  const centerY = y * tileSize + tileSize * 0.28;
+  const center = getDecorationCenter(x, y);
+  const centerX = center.x;
+  const centerY = center.y;
 
-  context.fillStyle = palette.flower;
+  context.fillStyle = palette.decorationPrimary || palette.flower;
   context.beginPath();
   context.arc(centerX - 2, centerY, 2.2, 0, Math.PI * 2);
   context.arc(centerX + 2, centerY, 2.2, 0, Math.PI * 2);
@@ -965,16 +1136,94 @@ function drawTinyFlower(x, y) {
   context.arc(centerX, centerY + 2, 2.2, 0, Math.PI * 2);
   context.fill();
 
-  context.fillStyle = palette.flowerCenter;
+  context.fillStyle = palette.decorationSecondary || palette.flowerCenter;
   context.beginPath();
   context.arc(centerX, centerY, 1.7, 0, Math.PI * 2);
   context.fill();
+}
+
+function drawTinySprout(x, y) {
+  const palette = getCanvasPalette();
+  const center = getDecorationCenter(x, y);
+
+  context.strokeStyle = palette.decorationPrimary;
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(center.x, center.y + 5);
+  context.lineTo(center.x, center.y - 4);
+  context.stroke();
+
+  context.fillStyle = palette.decorationSecondary;
+  context.beginPath();
+  context.ellipse(center.x - 4, center.y - 3, 4, 2.5, 0.55, 0, Math.PI * 2);
+  context.ellipse(center.x + 4, center.y - 6, 4, 2.5, -0.55, 0, Math.PI * 2);
+  context.fill();
+}
+
+function drawTinyButterfly(x, y) {
+  const palette = getCanvasPalette();
+  const center = getDecorationCenter(x, y);
+
+  context.fillStyle = palette.decorationPrimary;
+  context.beginPath();
+  context.ellipse(center.x - 3, center.y - 2, 3.5, 5, -0.55, 0, Math.PI * 2);
+  context.ellipse(center.x + 3, center.y - 2, 3.5, 5, 0.55, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = palette.decorationSecondary;
+  context.beginPath();
+  context.ellipse(center.x, center.y, 1.4, 5, 0, 0, Math.PI * 2);
+  context.fill();
+}
+
+function drawTinyVegetable(x, y) {
+  const palette = getCanvasPalette();
+  const center = getDecorationCenter(x, y);
+
+  context.fillStyle = palette.decorationPrimary;
+  context.beginPath();
+  context.arc(center.x, center.y + 2, 4, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = palette.decorationSecondary;
+  context.beginPath();
+  context.ellipse(center.x - 3, center.y - 3, 3, 5, -0.6, 0, Math.PI * 2);
+  context.ellipse(center.x + 3, center.y - 3, 3, 5, 0.6, 0, Math.PI * 2);
+  context.fill();
+}
+
+function drawTinyConfetti(x, y) {
+  const palette = getCanvasPalette();
+  const center = getDecorationCenter(x, y);
+
+  context.save();
+  context.translate(center.x, center.y);
+  context.rotate(0.45);
+  context.fillStyle = palette.decorationPrimary;
+  context.fillRect(-6, -2, 5, 3);
+  context.fillStyle = palette.decorationSecondary;
+  context.fillRect(2, -5, 3, 6);
+  context.restore();
 }
 
 function drawObstacle(cell) {
   const palette = getCanvasPalette();
   const x = cell.x * tileSize;
   const y = cell.y * tileSize;
+
+  const visualTheme = getLevelVisualTheme();
+  if (visualTheme === "butterfly") {
+    drawStoneObstacle(x, y, palette);
+  } else if (visualTheme === "garden" || visualTheme === "vegetable") {
+    drawGardenBedObstacle(x, y, palette);
+  } else if (visualTheme === "festival") {
+    drawFestivalObstacle(x, y, palette);
+  } else {
+    drawLogObstacle(x, y, palette);
+  }
+}
+
+function drawLogObstacle(x, y, palette) {
 
   context.fillStyle = palette.obstacle;
   roundRect(x + 4, y + 7, tileSize - 8, tileSize - 13, 7);
@@ -986,6 +1235,50 @@ function drawObstacle(cell) {
 
   context.fillStyle = palette.obstacleDark;
   roundRect(x + 8, y + 21, tileSize - 16, 4, 3);
+  context.fill();
+}
+
+function drawGardenBedObstacle(x, y, palette) {
+  context.fillStyle = palette.obstacle;
+  roundRect(x + 3, y + 4, tileSize - 6, tileSize - 8, 5);
+  context.fill();
+
+  context.fillStyle = palette.obstacleDark;
+  roundRect(x + 7, y + 8, tileSize - 14, tileSize - 16, 4);
+  context.fill();
+
+  context.strokeStyle = palette.obstacleLight;
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(x + 9, y + tileSize / 2);
+  context.lineTo(x + tileSize - 9, y + tileSize / 2);
+  context.stroke();
+}
+
+function drawStoneObstacle(x, y, palette) {
+  context.fillStyle = palette.obstacle;
+  context.beginPath();
+  context.ellipse(x + tileSize / 2, y + tileSize / 2 + 2, tileSize * 0.4, tileSize * 0.31, -0.12, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = palette.obstacleLight;
+  context.beginPath();
+  context.ellipse(x + tileSize * 0.4, y + tileSize * 0.42, tileSize * 0.13, tileSize * 0.08, -0.4, 0, Math.PI * 2);
+  context.fill();
+}
+
+function drawFestivalObstacle(x, y, palette) {
+  context.fillStyle = palette.obstacle;
+  roundRect(x + 4, y + 4, tileSize - 8, tileSize - 8, 6);
+  context.fill();
+
+  context.fillStyle = palette.obstacleLight;
+  context.fillRect(x + tileSize * 0.42, y + 5, tileSize * 0.16, tileSize - 10);
+  context.fillRect(x + 5, y + tileSize * 0.42, tileSize - 10, tileSize * 0.16);
+
+  context.fillStyle = palette.obstacleDark;
+  context.beginPath();
+  context.arc(x + tileSize / 2, y + tileSize / 2, 3, 0, Math.PI * 2);
   context.fill();
 }
 
