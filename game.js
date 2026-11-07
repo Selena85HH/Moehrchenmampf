@@ -42,7 +42,7 @@ const gameVersionElement = document.querySelector("#gameVersion");
 const tileCount = 20;
 const tileSize = canvas.width / tileCount;
 const multiplayerTarget = 10;
-const gameVersion = "40";
+const gameVersion = "41";
 const settingsStorageKey = "moehrchenmampf-settings";
 const modeOrder = ["levels", "endless", "multiplayer"];
 const defaultSettings = {
@@ -140,7 +140,10 @@ let players = [];
 let carrot;
 let score = 0;
 let levelStartScore = 0;
-let gameTimer;
+let gameFrame;
+let lastStepTime = 0;
+let previousBodies = new Map();
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let countdownTimer;
 let countdownFinishTimer;
 let running = false;
@@ -149,7 +152,7 @@ let countdownActive = false;
 let menuOpen = true;
 let currentSpeed = levels[0].speed;
 let selectedModeIndex = 0;
-let lastGamepadDirectionKey = "";
+const lastGamepadDirectionKeys = { p1: "", p2: "" };
 let lastGamepadMenuMove = 0;
 let audioUnlocked = false;
 let audioContext;
@@ -162,8 +165,8 @@ let gamepadButtonState = {
 
 const canvasPalettes = {
   standard: {
-    fieldLight: "#c9f18d",
-    fieldDark: "#bdea7d",
+    fieldLight: "#dceac2",
+    fieldDark: "#d3e4b7",
     flower: "rgba(255, 255, 255, 0.78)",
     flowerCenter: "#ffd45e",
     decorationPrimary: "rgba(255, 255, 255, 0.78)",
@@ -223,8 +226,8 @@ const canvasPalettes = {
 const levelVisualPalettes = {
   meadow: {
     standard: {
-      fieldLight: "#c9f18d",
-      fieldDark: "#bdea7d",
+      fieldLight: "#dceac2",
+      fieldDark: "#d3e4b7",
       decorationPrimary: "rgba(255, 255, 255, 0.9)",
       decorationSecondary: "#ffd45e",
       obstacle: "#a7673a",
@@ -579,7 +582,7 @@ function createPlayer(options) {
     name: options.name,
     body: options.body,
     direction: options.direction,
-    nextDirection: options.direction,
+    directionQueue: [],
     colors: options.colors,
     carrots: 0,
     alive: true
@@ -646,7 +649,7 @@ function chooseMode(nextMode) {
 }
 
 function startMode() {
-  clearInterval(gameTimer);
+  stopGameLoop();
   clearCountdown();
   stopSound("menu");
   playSound("start");
@@ -667,6 +670,11 @@ function startMode() {
     currentSpeed = mode === "levels" ? levels[currentLevelIndex].speed : 145;
   }
 
+  previousBodies.clear();
+  lastGamepadDirectionKeys.p1 = "";
+  lastGamepadDirectionKeys.p2 = "";
+  document.body.classList.remove("menu-open");
+
   carrot = placeCarrot();
   updateHud();
   renderInfoPanel();
@@ -674,7 +682,7 @@ function startMode() {
   updatePauseButton();
   draw();
   beginCountdown(() => {
-    gameTimer = setInterval(tick, currentSpeed);
+    startGameLoop();
   });
 }
 
@@ -687,7 +695,12 @@ function pauseGame() {
   paused = true;
   playSound("pause");
   pauseBackgroundMusic();
-  clearInterval(gameTimer);
+  stopGameLoop();
+  players.forEach((player) => { player.directionQueue = []; });
+  lastGamepadDirectionKeys.p1 = "";
+  lastGamepadDirectionKeys.p2 = "";
+  previousBodies.clear();
+  draw();
   setOverlayMode("pause");
   messageTitle.textContent = "Pause";
   messageText.textContent = "Das Häschen wartet kurz. Weiter geht es, wenn du bereit bist.";
@@ -710,7 +723,7 @@ function resumeGame() {
   startBackgroundMusic();
   updatePauseButton();
   beginCountdown(() => {
-    gameTimer = setInterval(tick, currentSpeed);
+    startGameLoop();
   });
 }
 
@@ -789,14 +802,47 @@ function setOverlayMode(modeName) {
   }
 }
 
-function tick() {
-  if (paused) {
+function startGameLoop() {
+  stopGameLoop();
+  lastStepTime = performance.now();
+  gameFrame = requestAnimationFrame(advanceGameFrame);
+}
+
+function stopGameLoop() {
+  cancelAnimationFrame(gameFrame);
+  gameFrame = null;
+}
+
+function advanceGameFrame(now) {
+  if (!running || paused || countdownActive) {
+    gameFrame = null;
     return;
   }
 
+  if (now - lastStepTime >= currentSpeed) {
+    // One step after a stalled frame; never fast-forward into an unseen collision.
+    lastStepTime = now - Math.min(now - lastStepTime - currentSpeed, 16);
+    tick();
+  }
+  if (!running || paused) {
+    draw();
+    return;
+  }
+
+  const progress = reducedMotion.matches ? 1 : Math.min(1, (now - lastStepTime) / currentSpeed);
+  draw(progress);
+  gameFrame = requestAnimationFrame(advanceGameFrame);
+}
+
+function tick() {
+  if (!running || paused || countdownActive) {
+    return;
+  }
+
+  previousBodies = new Map(players.map((player) => [player.id, player.body.map((cell) => ({ ...cell }))]));
   players.forEach((player) => {
     if (player.alive) {
-      player.direction = player.nextDirection;
+      player.direction = player.directionQueue.shift() || player.direction;
     }
   });
 
@@ -899,7 +945,7 @@ function evaluateLevelMode() {
     return;
   }
 
-  clearInterval(gameTimer);
+  stopGameLoop();
   running = false;
 
   if (currentLevelIndex === levels.length - 1) {
@@ -945,8 +991,6 @@ function evaluateEndlessMode() {
   const nextSpeed = Math.max(78, 145 - Math.floor(player.carrots / 5) * 9);
   if (nextSpeed !== currentSpeed) {
     currentSpeed = nextSpeed;
-    clearInterval(gameTimer);
-    gameTimer = setInterval(tick, currentSpeed);
   }
 }
 
@@ -969,7 +1013,7 @@ function evaluateMultiplayerMode() {
 }
 
 function endGame(title, text, buttonText) {
-  clearInterval(gameTimer);
+  stopGameLoop();
   clearCountdown();
   stopBackgroundMusic();
   running = false;
@@ -980,7 +1024,7 @@ function endGame(title, text, buttonText) {
 }
 
 function endLevelGame(title, text, buttonText) {
-  clearInterval(gameTimer);
+  stopGameLoop();
   clearCountdown();
   stopBackgroundMusic();
   running = false;
@@ -1044,10 +1088,12 @@ function hideFinalSurprise() {
 }
 
 function showMenu() {
-  clearInterval(gameTimer);
+  stopGameLoop();
   clearCountdown();
   stopBackgroundMusic();
   menuOpen = true;
+  document.body.classList.add("menu-open");
+  previousBodies.clear();
   running = false;
   paused = false;
   mode = "levels";
@@ -1065,8 +1111,8 @@ function showMenu() {
   pauseButton.classList.add("hidden");
   levelCard.classList.add("hidden");
   highscoreSummary.classList.add("hidden");
-  messageTitle.textContent = "Willkommen bei Möhrchenmampf";
-  messageText.textContent = "Wähle einen Spielmodus und hopp dann los.";
+  messageTitle.textContent = "Deine kleine Garten-Auszeit.";
+  messageText.textContent = "Sammle Möhrchen, finde deinen Weg und bleib in Bewegung. Allein oder zu zweit.";
   messageOverlay.classList.remove("hidden");
   selectedModeIndex = 0;
   updateSelectedModeButton();
@@ -1137,6 +1183,12 @@ function shortName(name) {
 
 function updateTouchControls() {
   playerTwoJoystick.classList.toggle("hidden", mode !== "multiplayer");
+  document.querySelector("#keyboardHint").textContent = mode === "multiplayer"
+    ? "Spieler 1: WASD · Spieler 2: Pfeiltasten · Leertaste: Pause"
+    : "Pfeiltasten oder WASD · Leertaste: Pause";
+  document.querySelector("#touchHint").textContent = mode === "multiplayer"
+    ? "Jedes Häschen hat einen Joystick · Ⅱ pausiert"
+    : "Mit dem Joystick lenken · Ⅱ pausiert";
 }
 
 function getModeName() {
@@ -1187,14 +1239,22 @@ function addInfoItem(text, current) {
   levelList.appendChild(item);
 }
 
-function draw() {
+function draw(progress = 1) {
   drawField();
   getObstacles().forEach(drawObstacle);
   if (carrot) {
     drawCarrot(carrot);
   }
   players.forEach((player) => {
-    player.body.forEach((part, index) => drawBunnyPart(part, index, player));
+    const previous = previousBodies.get(player.id);
+    player.body.forEach((part, index) => {
+      const from = previous?.[Math.min(index, previous.length - 1)] || part;
+      const position = {
+        x: from.x + (part.x - from.x) * progress,
+        y: from.y + (part.y - from.y) * progress
+      };
+      drawBunnyPart(position, index, player);
+    });
   });
 }
 
@@ -1506,23 +1566,33 @@ function roundRect(x, y, width, height, radius) {
 }
 
 function setDirection(playerId, newDirection) {
-  if (!running) {
-    return;
+  if (!running || paused || !settingsDialog.classList.contains("hidden")) {
+    return false;
   }
 
   const player = players.find((entry) => entry.id === playerId);
   if (!player || !player.alive) {
-    return;
+    return false;
   }
 
-  const isOpposite = newDirection.x + player.direction.x === 0 && newDirection.y + player.direction.y === 0;
-  if (!isOpposite) {
-    player.nextDirection = newDirection;
+  // Validate against the last queued turn so two quick corners stay in order.
+  const lastDirection = player.directionQueue.at(-1) || player.direction;
+  const isOpposite = newDirection.x + lastDirection.x === 0 && newDirection.y + lastDirection.y === 0;
+  const isSame = newDirection.x === lastDirection.x && newDirection.y === lastDirection.y;
+  if (isOpposite || isSame || player.directionQueue.length >= 2) {
+    return false;
   }
+  player.directionQueue.push({ ...newDirection });
+  return true;
 }
 
 document.addEventListener("keydown", (event) => {
   if (isTypingTarget(event.target)) {
+    return;
+  }
+
+  if (event.repeat) {
+    if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) event.preventDefault();
     return;
   }
 
@@ -1578,7 +1648,8 @@ function setupJoystick(joystick) {
 
     knob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
 
-    if (distance < 16) {
+    if (distance < 8) {
+      lastDirectionKey = "";
       return;
     }
 
@@ -1587,8 +1658,7 @@ function setupJoystick(joystick) {
       : { key: deltaY > 0 ? "down" : "up", value: { x: 0, y: deltaY > 0 ? 1 : -1 } };
 
     if (direction.key !== lastDirectionKey) {
-      lastDirectionKey = direction.key;
-      setDirection(joystick.dataset.player, direction.value);
+      if (setDirection(joystick.dataset.player, direction.value)) lastDirectionKey = direction.key;
     }
   }
 
@@ -1601,10 +1671,11 @@ function setupJoystick(joystick) {
     lastDirectionKey = "";
     joystick.classList.remove("active");
     knob.style.transform = "translate(-50%, -50%)";
-    joystick.releasePointerCapture(event.pointerId);
+    if (joystick.hasPointerCapture(event.pointerId)) joystick.releasePointerCapture(event.pointerId);
   }
 
   joystick.addEventListener("pointerdown", (event) => {
+    if (activePointerId !== null) return;
     event.preventDefault();
     activePointerId = event.pointerId;
     joystick.classList.add("active");
@@ -1619,6 +1690,7 @@ function setupJoystick(joystick) {
 
   joystick.addEventListener("pointerup", resetJoystick);
   joystick.addEventListener("pointercancel", resetJoystick);
+  joystick.addEventListener("lostpointercapture", resetJoystick);
 }
 
 function readGamepads() {
@@ -1646,18 +1718,15 @@ function handleGamepad(gamepad, playerId) {
   const direction = getGamepadDirection(axisX, axisY, dpadUp, dpadDown, dpadLeft, dpadRight);
   if (direction) {
     if (running) {
-      if (direction.key !== lastGamepadDirectionKey || playerId === "p2") {
-        setDirection(playerId, direction.value);
-      }
-      if (playerId === "p1") {
-        lastGamepadDirectionKey = direction.key;
+      if (direction.key !== lastGamepadDirectionKeys[playerId]) {
+        if (setDirection(playerId, direction.value)) lastGamepadDirectionKeys[playerId] = direction.key;
       }
     } else if (playerId === "p1") {
       moveMenuWithGamepad(direction.key);
     }
-  } else if (playerId === "p1") {
-    lastGamepadDirectionKey = "";
-    lastGamepadMenuMove = 0;
+  } else {
+    lastGamepadDirectionKeys[playerId] = "";
+    if (playerId === "p1") lastGamepadMenuMove = 0;
   }
 
   if (playerId === "p1") {

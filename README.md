@@ -2,6 +2,28 @@
 
 Ein fröhliches Snake-ähnliches 2D-Spiel für den Browser und später als PWA für den Microsoft Store.
 
+## Version 41
+
+- Neuer Garten-Look mit ruhigeren Farben, Spielmodus-Karten und sichtbarer Steuerungshilfe.
+- Flüssige Bewegung zwischen Rasterfeldern, unabhängig von der Bildwiederholrate.
+- Zwei schnelle Richtungswechsel werden in Reihenfolge vorgemerkt; direkte Kehrtwenden bleiben gesperrt.
+- Empfindlicherer Touch-Joystick und getrennte Eingabepuffer für beide Spieler.
+- Die Einstellung „Bewegung reduzieren“ des Geräts schaltet die Bewegungsanimation ab.
+
+Die Levelgeschwindigkeit und die Kollisionsregeln bleiben unverändert.
+
+## Prüfungen
+
+Mit Node.js lassen sich die Steuerung, der Spielablauf und die PWA-Dateien prüfen:
+
+```powershell
+node --test tests/game.test.cjs
+node --check game.js
+node --check service-worker.js
+```
+
+Zusätzlich die Darstellung auf PC und Smartphone sowie echte Controller im Browser prüfen.
+
 ## Lokal starten
 
 Am einfachsten startest du im Projektordner einen kleinen lokalen Webserver:

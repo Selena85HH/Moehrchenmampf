@@ -8,7 +8,7 @@
     <title>Möhrchenmampf</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" type="image/png" href="assets/icons/favicon.png" />
-    <link rel="stylesheet" href="styles.css?v=40" />
+    <link rel="stylesheet" href="styles.css?v=41" />
   </head>
   <body>
     <main class="app-shell">
@@ -34,8 +34,8 @@
           <canvas id="gameCanvas" width="640" height="640" aria-label="Spielfeld"></canvas>
           <div id="messageOverlay" class="message-overlay">
             <div>
-              <h2 id="messageTitle">Willkommen bei Möhrchenmampf</h2>
-              <p id="messageText">Wähle einen Spielmodus und hopp dann los.</p>
+              <h2 id="messageTitle">Deine kleine Garten-Auszeit.</h2>
+              <p id="messageText">Sammle Möhrchen, finde deinen Weg und bleib in Bewegung. Allein oder zu zweit.</p>
               <p id="highscoreSummary" class="highscore-summary"></p>
               <div id="finalSurprise" class="final-surprise hidden" aria-hidden="true">
                 <div class="victory-card" aria-hidden="true">
@@ -47,15 +47,31 @@
                 <div id="carrotConfetti" class="carrot-confetti" aria-hidden="true"></div>
               </div>
               <div id="modeButtons" class="mode-buttons">
-                <button type="button" data-mode="levels">Level-Spiel</button>
-                <button type="button" data-mode="endless">Endlos-Spiel</button>
-                <button type="button" data-mode="multiplayer">2 Spieler</button>
+                <button type="button" data-mode="levels">
+                  <span class="mode-symbol" aria-hidden="true">01</span>
+                  <span class="mode-copy"><strong>Level-Abenteuer</strong><small>Fünf Gärten. Ein großes Möhrchenfest.</small></span>
+                  <span class="mode-arrow" aria-hidden="true">↗</span>
+                </button>
+                <button type="button" data-mode="endless">
+                  <span class="mode-symbol" aria-hidden="true">∞</span>
+                  <span class="mode-copy"><strong>Endlos-Spiel</strong><small>Deine nächste Runde. Dein neuer Rekord.</small></span>
+                  <span class="mode-arrow" aria-hidden="true">↗</span>
+                </button>
+                <button type="button" data-mode="multiplayer">
+                  <span class="mode-symbol" aria-hidden="true">02</span>
+                  <span class="mode-copy"><strong>Duell zu zweit</strong><small>Zwei Häschen an einem Gerät.</small></span>
+                  <span class="mode-arrow" aria-hidden="true">↗</span>
+                </button>
               </div>
               <button id="primaryButton" type="button" class="hidden">Nochmal spielen</button>
               <button id="secondaryOverlayButton" type="button" class="secondary-button hidden">Zurück zum Menü</button>
             </div>
           </div>
         </div>
+        <p class="controls-hint" aria-label="Steuerung">
+          <span id="keyboardHint">Pfeiltasten oder WASD · Leertaste: Pause</span>
+          <span id="touchHint">Mit dem Joystick lenken · Ⅱ pausiert</span>
+        </p>
 
       </section>
 
@@ -136,7 +152,7 @@
 
           <div class="settings-version" aria-label="Spielversion">
             <span>Spielversion</span>
-            <strong id="gameVersion">Version 40</strong>
+            <strong id="gameVersion">Version 41</strong>
           </div>
 
           <div class="settings-actions">
@@ -147,6 +163,6 @@
       </div>
     </div>
 
-    <script src="game.js?v=40"></script>
+    <script src="game.js?v=41"></script>
   </body>
 </html>
