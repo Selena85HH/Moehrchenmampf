@@ -8,7 +8,7 @@
     <title>Möhrchenmampf</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" type="image/png" href="assets/icons/favicon.png" />
-    <link rel="stylesheet" href="styles.css?v=41" />
+    <link rel="stylesheet" href="styles.css?v=42" />
   </head>
   <body>
     <main class="app-shell">
@@ -17,7 +17,8 @@
           <div>
             <p class="eyebrow"><span id="modeLabel">Willkommen</span><span id="levelBadge" class="hidden"><span id="levelNumber">1</span></span></p>
             <h1 class="logo-title">
-              <img src="assets/logo-title.png" alt="Möhrchenmampf" />
+              <img src="assets/logo-title.png" alt="" />
+              <span class="brand-wordmark">Möhrchenmampf</span>
             </h1>
           </div>
           <div class="header-side">
@@ -30,6 +31,19 @@
           </div>
         </header>
 
+        <section class="garden-progress" aria-label="Dein Gartenfortschritt">
+          <div class="garden-progress-copy">
+            <strong id="gardenPoints">0 Gartenpunkte</strong>
+            <span id="nextReward">Deine nächste Belohnung wartet.</span>
+            <progress id="gardenMeter" value="0" max="20" aria-label="Fortschritt zur nächsten Belohnung"></progress>
+          </div>
+          <nav class="garden-navigation" aria-label="Gartenreise und Sammlung">
+            <button id="openMapButton" type="button">Gartenkarte</button>
+            <button id="openCollectionButton" type="button">Sammlung</button>
+          </nav>
+        </section>
+        <p id="saveWarning" class="save-warning hidden" role="alert"></p>
+
         <div class="canvas-wrap">
           <canvas id="gameCanvas" width="640" height="640" aria-label="Spielfeld"></canvas>
           <div id="messageOverlay" class="message-overlay">
@@ -37,6 +51,7 @@
               <h2 id="messageTitle">Deine kleine Garten-Auszeit.</h2>
               <p id="messageText">Sammle Möhrchen, finde deinen Weg und bleib in Bewegung. Allein oder zu zweit.</p>
               <p id="highscoreSummary" class="highscore-summary"></p>
+              <p id="roundRewards" class="round-rewards hidden"></p>
               <div id="finalSurprise" class="final-surprise hidden" aria-hidden="true">
                 <div class="victory-card" aria-hidden="true">
                   <span class="victory-sun"></span>
@@ -49,7 +64,7 @@
               <div id="modeButtons" class="mode-buttons">
                 <button type="button" data-mode="levels">
                   <span class="mode-symbol" aria-hidden="true">01</span>
-                  <span class="mode-copy"><strong>Level-Abenteuer</strong><small>Fünf Gärten. Ein großes Möhrchenfest.</small></span>
+                  <span class="mode-copy"><strong>Level-Abenteuer</strong><small>Zehn Gärten. Goldmöhren. Deine Reise.</small></span>
                   <span class="mode-arrow" aria-hidden="true">↗</span>
                 </button>
                 <button type="button" data-mode="endless">
@@ -68,6 +83,7 @@
             </div>
           </div>
         </div>
+        <p id="adventureStatus" class="adventure-status">Sammle Möhrchen. Dein Garten wächst mit jeder Runde.</p>
         <p class="controls-hint" aria-label="Steuerung">
           <span id="keyboardHint">Pfeiltasten oder WASD · Leertaste: Pause</span>
           <span id="touchHint">Mit dem Joystick lenken · Ⅱ pausiert</span>
@@ -81,6 +97,20 @@
         <ul id="levelList"></ul>
       </aside>
     </main>
+
+    <div id="gardenToast" class="garden-toast hidden" role="status" aria-live="polite"></div>
+    <dialog id="gardenDialog" class="garden-dialog" aria-labelledby="gardenDialogTitle" aria-describedby="gardenDialogDescription">
+      <div class="garden-dialog-header">
+        <div><p class="world-kicker">MÖHRCHENMAMPF · DEIN GARTEN WÄCHST</p><h2 id="gardenDialogTitle">Deine Gartenreise</h2></div>
+        <button id="closeGardenButton" class="icon-button" type="button" aria-label="Gartenreise schließen">×</button>
+      </div>
+      <p id="gardenDialogDescription"></p>
+      <nav class="garden-tabs" aria-label="Ansicht auswählen">
+        <button id="mapTab" type="button" aria-pressed="true">Gartenkarte</button>
+        <button id="collectionTab" type="button" aria-pressed="false">Sammlung</button>
+      </nav>
+      <div id="gardenDialogContent"></div>
+    </dialog>
 
     <div class="rotate-hint" aria-hidden="true">
       <strong>Bitte drehen</strong>
@@ -152,7 +182,7 @@
 
           <div class="settings-version" aria-label="Spielversion">
             <span>Spielversion</span>
-            <strong id="gameVersion">Version 41</strong>
+            <strong id="gameVersion">Version 42</strong>
           </div>
 
           <div class="settings-actions">
@@ -163,6 +193,9 @@
       </div>
     </div>
 
-    <script src="game.js?v=41"></script>
+    <script src="progression.js?v=42"></script>
+    <script src="adventure.js?v=42"></script>
+    <script src="garden-ui.js?v=42"></script>
+    <script src="game.js?v=42"></script>
   </body>
 </html>

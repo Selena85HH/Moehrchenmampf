@@ -42,7 +42,7 @@ const gameVersionElement = document.querySelector("#gameVersion");
 const tileCount = 20;
 const tileSize = canvas.width / tileCount;
 const multiplayerTarget = 10;
-const gameVersion = "41";
+const gameVersion = "42";
 const settingsStorageKey = "moehrchenmampf-settings";
 const modeOrder = ["levels", "endless", "multiplayer"];
 const defaultSettings = {
@@ -119,8 +119,54 @@ const levels = [
       { x: 13, y: 16 }, { x: 14, y: 16 }, { x: 15, y: 16 },
       { x: 9, y: 8 }, { x: 10, y: 8 }, { x: 9, y: 11 }, { x: 10, y: 11 }
     ]
+  },
+  {
+    name: "Am Waldrand", description: "Zwischen Baumstämmen wartet die erste goldene Waldmöhre.",
+    visualTheme: "forest", target: 12, speed: 155,
+    obstacles: [{ x: 4, y: 4 }, { x: 5, y: 4 }, { x: 14, y: 15 }, { x: 15, y: 15 }]
+  },
+  {
+    name: "Die Gartenpforte", description: "Die Pforten blinken vor dem Schließen. Suche einen Weg darum herum.",
+    visualTheme: "forest", target: 16, speed: 145,
+    gates: [{ x: 10, y: 6 }, { x: 10, y: 14 }],
+    obstacles: [{ x: 8, y: 6 }, { x: 9, y: 6 }, { x: 11, y: 6 }, { x: 12, y: 6 }, { x: 8, y: 14 }, { x: 9, y: 14 }, { x: 11, y: 14 }, { x: 12, y: 14 }]
+  },
+  {
+    name: "Geheime Hasengänge", description: "Die türkisfarbenen Hasengänge verbinden zwei Stellen im Wald.",
+    visualTheme: "forest", target: 20, speed: 138,
+    tunnels: [{ x: 3, y: 3 }, { x: 16, y: 16 }],
+    obstacles: [{ x: 7, y: 6 }, { x: 7, y: 7 }, { x: 7, y: 8 }, { x: 12, y: 11 }, { x: 12, y: 12 }, { x: 12, y: 13 }]
+  },
+  {
+    name: "Glühwürmchenlicht", description: "Im Abendlicht leuchten goldene Möhren und die Gartenpforten.",
+    visualTheme: "dusk", target: 24, speed: 128,
+    gates: [{ x: 6, y: 7 }, { x: 13, y: 13 }],
+    obstacles: [{ x: 5, y: 7 }, { x: 7, y: 7 }, { x: 12, y: 13 }, { x: 14, y: 13 }, { x: 4, y: 15 }, { x: 15, y: 4 }]
+  },
+  {
+    name: "Das Waldleuchten", description: "Hasengänge und ein funkelndes Wald-Finale warten auf dich.",
+    visualTheme: "dusk", target: 30, speed: 118,
+    tunnels: [{ x: 2, y: 16 }, { x: 17, y: 3 }],
+    obstacles: [{ x: 5, y: 4 }, { x: 6, y: 4 }, { x: 13, y: 4 }, { x: 14, y: 4 }, { x: 5, y: 15 }, { x: 6, y: 15 }, { x: 13, y: 15 }, { x: 14, y: 15 }, { x: 9, y: 7 }, { x: 10, y: 12 }]
   }
 ];
+
+const garden = (() => {
+  try { return MampfProgress.create(localStorage, levels.length); }
+  catch { return MampfProgress.create(null, levels.length); }
+})();
+const gardenDialog = document.querySelector("#gardenDialog");
+let roundStartPoints = 0;
+let roundStartRewards = new Set();
+let roundSettled = false;
+let roundSteps = 0;
+let goldenCarrot = null;
+let goldenCount = 0;
+let nextGoldenAt = 3;
+let closedGates = [];
+let activeEndlessEvent = null;
+let collectFlash = 0;
+let toastTimer;
 
 const endlessObstacles = [
   { x: 4, y: 4 }, { x: 15, y: 4 }, { x: 4, y: 15 }, { x: 15, y: 15 },
@@ -538,6 +584,8 @@ function applyVisualSettings() {
 
 function getCanvasPalette() {
   const basePalette = canvasPalettes[settings.theme] || canvasPalettes.standard;
+  const adventurePalette = getAdventurePalette();
+  if (adventurePalette && settings.theme !== "contrast") return { ...basePalette, ...adventurePalette };
   if (mode !== "levels" || settings.theme === "contrast") {
     return basePalette;
   }
@@ -599,7 +647,7 @@ function createLevelPlayer() {
       { x: 7, y: 10 }
     ],
     direction: { x: 1, y: 0 },
-    colors: { head: "#fffdf8", body: "#f4f1eb", ear: "#ffb6c8", nose: "#ff9ab4" }
+    colors: getEquippedColors()
   });
 }
 
@@ -632,7 +680,7 @@ function createMultiplayerPlayers() {
 
 function getObstacles() {
   if (mode === "levels") {
-    return levels[currentLevelIndex].obstacles;
+    return [...levels[currentLevelIndex].obstacles, ...closedGates];
   }
   if (mode === "endless") {
     return endlessObstacles;
@@ -643,7 +691,7 @@ function getObstacles() {
 function chooseMode(nextMode) {
   mode = nextMode;
   selectedModeIndex = Math.max(0, modeOrder.indexOf(nextMode));
-  currentLevelIndex = 0;
+  currentLevelIndex = nextMode === "levels" ? garden.state.selectedLevel : 0;
   score = 0;
   startMode();
 }
@@ -658,6 +706,18 @@ function startMode() {
   running = true;
   paused = false;
   levelStartScore = score;
+  roundStartPoints = garden.state.points;
+  roundStartRewards = new Set(garden.unlocked().map((reward) => reward.id));
+  roundSettled = false;
+  roundSteps = 0;
+  goldenCarrot = null;
+  goldenCount = 0;
+  nextGoldenAt = 2;
+  closedGates = [];
+  activeEndlessEvent = null;
+  collectFlash = 0;
+  document.querySelector("#roundRewards").classList.add("hidden");
+  if (mode === "levels") garden.selectLevel(currentLevelIndex);
   scoreboard.classList.remove("hidden");
   pauseButton.classList.remove("hidden");
   levelCard.classList.remove("hidden");
@@ -706,7 +766,8 @@ function pauseGame() {
   messageText.textContent = "Das Häschen wartet kurz. Weiter geht es, wenn du bereit bist.";
   primaryButton.textContent = "Weiter";
   primaryButton.classList.remove("hidden");
-  secondaryOverlayButton.classList.add("hidden");
+  secondaryOverlayButton.textContent = "Zurück zum Menü";
+  secondaryOverlayButton.classList.remove("hidden");
   setModeButtonsVisible(false);
   messageOverlay.classList.remove("hidden");
   updatePauseButton();
@@ -846,6 +907,9 @@ function tick() {
     }
   });
 
+  roundSteps += 1;
+  advanceGardenEvents();
+
   const moves = players.map((player) => ({
     player,
     head: player.alive ? getNextHead(player) : player.body[0],
@@ -869,6 +933,7 @@ function tick() {
       move.player.carrots += 1;
       score += mode === "levels" ? 10 + currentLevelIndex * 5 : 10;
       playSound("carrot");
+      if (mode !== "multiplayer") collectGardenCarrot(move.player);
     } else {
       move.player.body.pop();
     }
@@ -878,6 +943,7 @@ function tick() {
   if (carrotWasEaten) {
     carrot = placeCarrot();
   }
+  if (mode !== "multiplayer" && players[0].alive && goldenCarrot && sameCell(players[0].body[0], goldenCarrot)) collectGoldenCarrot();
 
   updateHud();
   draw();
@@ -886,7 +952,13 @@ function tick() {
 
 function getNextHead(player) {
   const head = player.body[0];
-  return { x: head.x + player.direction.x, y: head.y + player.direction.y };
+  const next = { x: head.x + player.direction.x, y: head.y + player.direction.y };
+  const tunnels = mode === "levels" ? levels[currentLevelIndex].tunnels : null;
+  if (tunnels?.some((cell) => sameCell(cell, next))) {
+    const exit = tunnels.find((cell) => !sameCell(cell, next));
+    return { ...exit };
+  }
+  return next;
 }
 
 function hasCollision(player, cell, moves) {
@@ -932,6 +1004,7 @@ function evaluateRound() {
 }
 
 function evaluateLevelMode() {
+  if (roundSettled) return;
   const player = players[0];
   if (!player.alive) {
     playSound("gameOver");
@@ -947,13 +1020,16 @@ function evaluateLevelMode() {
 
   stopGameLoop();
   running = false;
+  roundSettled = true;
+  garden.addPoints(10);
+  garden.awardBadge(currentLevelIndex, "complete");
+  updateGardenProgress();
 
   if (currentLevelIndex === levels.length - 1) {
     playSound("levelComplete");
     playFinalVictorySound();
-    currentLevelIndex = 0;
     score = 0;
-    showLevelResultOverlay("Gewonnen!", "Das Häschen hat das große Möhrchenfest gemeistert.", "Nochmal spielen", true);
+    showLevelResultOverlay("Der Wald leuchtet!", "Alle zehn Gärten sind freigeschaltet. Sammle jetzt die fehlenden Abzeichen für die Welt-Umhänge.", "Finale erneut spielen", true);
     updateHud();
     renderInfoPanel();
     return;
@@ -961,7 +1037,7 @@ function evaluateLevelMode() {
 
   currentLevelIndex += 1;
   playSound("levelComplete");
-  showLevelResultOverlay("Level geschafft!", "Das nächste Feld wartet schon.", "Weiterhoppeln");
+  showLevelResultOverlay(currentLevelIndex === 5 ? "Die Wiesenwelt ist geschafft!" : "Level geschafft!", currentLevelIndex === 5 ? "Fünf neue Waldgärten mit Pforten und Hasengängen warten auf dich." : "Das nächste Feld wartet schon.", "Weiterhoppeln", currentLevelIndex === 5);
   updateHud();
   renderInfoPanel();
 }
@@ -1013,6 +1089,7 @@ function evaluateMultiplayerMode() {
 }
 
 function endGame(title, text, buttonText) {
+  roundSettled = true;
   stopGameLoop();
   clearCountdown();
   stopBackgroundMusic();
@@ -1024,6 +1101,7 @@ function endGame(title, text, buttonText) {
 }
 
 function endLevelGame(title, text, buttonText) {
+  roundSettled = true;
   stopGameLoop();
   clearCountdown();
   stopBackgroundMusic();
@@ -1041,10 +1119,12 @@ function showOverlay(title, text, buttonText) {
   hideFinalSurprise();
   primaryButton.textContent = buttonText;
   primaryButton.classList.remove("hidden");
-  secondaryOverlayButton.classList.add("hidden");
-  setModeButtonsVisible(true);
+  secondaryOverlayButton.textContent = "Zurück zum Menü";
+  secondaryOverlayButton.classList.remove("hidden");
+  setModeButtonsVisible(false);
   messageOverlay.classList.remove("hidden");
   updateSelectedModeButton();
+  renderRoundRewards();
 }
 
 function showLevelResultOverlay(title, text, buttonText, showFinalSurprise = false) {
@@ -1062,12 +1142,13 @@ function showLevelResultOverlay(title, text, buttonText, showFinalSurprise = fal
   secondaryOverlayButton.classList.remove("hidden");
   setModeButtonsVisible(false);
   messageOverlay.classList.remove("hidden");
+  renderRoundRewards();
 }
 
 function revealFinalSurprise() {
   finalSurprise.classList.remove("hidden");
   carrotConfetti.replaceChildren();
-  const colors = ["#ff8b2c", "#ffd45e", "#7bdc6a", "#ff6fae", "#7bc8ff", "#b57cff"];
+  const colors = garden.state.equipment.accessory === "crown" ? ["#ffdc67", "#c58c2b", "#fff3bf"] : ["#ff8b2c", "#ffd45e", "#7bdc6a", "#ff6fae", "#7bc8ff", "#b57cff"];
 
   for (let index = 0; index < 42; index += 1) {
     const piece = document.createElement("span");
@@ -1097,7 +1178,12 @@ function showMenu() {
   running = false;
   paused = false;
   mode = "levels";
-  currentLevelIndex = 0;
+  currentLevelIndex = garden.state.selectedLevel;
+  goldenCarrot = null;
+  closedGates = [];
+  activeEndlessEvent = null;
+  document.querySelector("#roundRewards").classList.add("hidden");
+  document.querySelector("#adventureStatus").textContent = "Sammle Möhrchen. Dein Garten wächst mit jeder Runde.";
   score = 0;
   players = [createLevelPlayer()];
   carrot = placeCarrot();
@@ -1119,6 +1205,7 @@ function showMenu() {
   updateTouchControls();
   updatePauseButton();
   draw();
+  updateGardenProgress();
 }
 
 function setModeButtonsVisible(isVisible) {
@@ -1142,21 +1229,11 @@ function moveSelectedMode(step) {
 }
 
 function sameCell(a, b) {
-  return a.x === b.x && a.y === b.y;
+  return Boolean(a && b && a.x === b.x && a.y === b.y);
 }
 
 function placeCarrot() {
-  const blocked = [...getObstacles(), ...players.flatMap((player) => player.body)];
-  let candidate;
-
-  do {
-    candidate = {
-      x: Math.floor(Math.random() * tileCount),
-      y: Math.floor(Math.random() * tileCount)
-    };
-  } while (blocked.some((cell) => sameCell(cell, candidate)));
-
-  return candidate;
+  return freeGardenCell(goldenCarrot ? [goldenCarrot] : []);
 }
 
 function updateHud() {
@@ -1165,6 +1242,7 @@ function updateHud() {
   levelBadge.classList.add("hidden");
   levelNumber.textContent = String(currentLevelIndex + 1);
   updateHighscoreSummaryVisibility();
+  updateAdventureStatus();
 
   if (mode === "multiplayer") {
     carrotScoreLine.innerHTML = `${shortName(players[0].name)}: <strong>${players[0].carrots}</strong>/${multiplayerTarget} ${shortName(players[1].name)}: <strong>${players[1].carrots}</strong>/${multiplayerTarget}`;
@@ -1208,6 +1286,7 @@ function renderInfoPanel() {
     const level = levels[currentLevelIndex];
     levelName.textContent = level.name;
     levelDescription.textContent = level.description;
+    addInfoItem("Abzeichen: Level schaffen · 1 Goldmöhre · 3 Goldmöhren (auch in getrennten Versuchen)", true);
     levels.forEach((entry, index) => {
       addInfoItem(`${index + 1}. ${entry.name}: ${entry.target} Möhrchen`, index === currentLevelIndex);
     });
@@ -1240,22 +1319,28 @@ function addInfoItem(text, current) {
 }
 
 function draw(progress = 1) {
+  let displayedHead;
   drawField();
+  drawAdventureScenery();
   getObstacles().forEach(drawObstacle);
   if (carrot) {
     drawCarrot(carrot);
   }
+  if (goldenCarrot) drawGoldenCarrot();
   players.forEach((player) => {
     const previous = previousBodies.get(player.id);
     player.body.forEach((part, index) => {
-      const from = previous?.[Math.min(index, previous.length - 1)] || part;
+      let from = previous?.[Math.min(index, previous.length - 1)] || part;
+      if (Math.abs(from.x - part.x) + Math.abs(from.y - part.y) > 1) from = part;
       const position = {
         x: from.x + (part.x - from.x) * progress,
         y: from.y + (part.y - from.y) * progress
       };
+      if (player.id === "p1" && index === 0) displayedHead = position;
       drawBunnyPart(position, index, player);
     });
   });
+  drawGardenCompanion(displayedHead);
 }
 
 function drawField() {
@@ -1277,7 +1362,9 @@ function drawField() {
 
 function drawTileDecoration(x, y) {
   const visualTheme = getLevelVisualTheme();
-  if (visualTheme === "garden") {
+  if (visualTheme === "forest" || visualTheme === "dusk") {
+    drawForestDecoration(x, y, visualTheme === "dusk");
+  } else if (visualTheme === "garden") {
     drawTinySprout(x, y);
   } else if (visualTheme === "butterfly") {
     drawTinyButterfly(x, y);
@@ -1382,6 +1469,10 @@ function drawTinyConfetti(x, y) {
 }
 
 function drawObstacle(cell) {
+  if (mode === "levels" && levels[currentLevelIndex].gates?.some((gate) => sameCell(gate, cell))) {
+    drawClosedGardenGate(cell);
+    return;
+  }
   const palette = getCanvasPalette();
   const x = cell.x * tileSize;
   const y = cell.y * tileSize;
@@ -1509,27 +1600,33 @@ function drawBunnyPart(cell, index, player) {
 
   if (index === 0) {
     drawBunnyFace(centerX, centerY, player.colors);
+    if (mode !== "multiplayer") drawGardenAccessories(centerX, centerY);
+  } else if (mode !== "multiplayer") {
+    drawGardenTrail(centerX, centerY, index);
   }
 }
 
 function drawBunnyFace(centerX, centerY, colors) {
   const palette = getCanvasPalette();
+  const animated = running && !paused && !countdownActive && !reducedMotion.matches;
+  const earTilt = animated ? Math.sin(performance.now() / 340) * 0.06 : 0;
   context.fillStyle = colors.head;
   context.beginPath();
-  context.ellipse(centerX - 8, centerY - 16, 5, 14, -0.35, 0, Math.PI * 2);
-  context.ellipse(centerX + 8, centerY - 16, 5, 14, 0.35, 0, Math.PI * 2);
+  context.ellipse(centerX - 8, centerY - 16, 5, 14, -0.35 + earTilt, 0, Math.PI * 2);
+  context.ellipse(centerX + 8, centerY - 16, 5, 14, 0.35 - earTilt, 0, Math.PI * 2);
   context.fill();
 
   context.fillStyle = colors.ear;
   context.beginPath();
-  context.ellipse(centerX - 8, centerY - 16, 2, 8, -0.35, 0, Math.PI * 2);
-  context.ellipse(centerX + 8, centerY - 16, 2, 8, 0.35, 0, Math.PI * 2);
+  context.ellipse(centerX - 8, centerY - 16, 2, 8, -0.35 + earTilt, 0, Math.PI * 2);
+  context.ellipse(centerX + 8, centerY - 16, 2, 8, 0.35 - earTilt, 0, Math.PI * 2);
   context.fill();
 
   context.fillStyle = palette.face;
   context.beginPath();
-  context.arc(centerX - 5, centerY - 2, 2, 0, Math.PI * 2);
-  context.arc(centerX + 5, centerY - 2, 2, 0, Math.PI * 2);
+  const eyeHeight = animated && performance.now() % 4200 > 4090 ? 0.5 : 2;
+  context.ellipse(centerX - 5, centerY - 2, 2, eyeHeight, 0, 0, Math.PI * 2);
+  context.ellipse(centerX + 5, centerY - 2, 2, eyeHeight, 0, 0, Math.PI * 2);
   context.fill();
 
   context.fillStyle = colors.nose;
@@ -1566,7 +1663,7 @@ function roundRect(x, y, width, height, radius) {
 }
 
 function setDirection(playerId, newDirection) {
-  if (!running || paused || !settingsDialog.classList.contains("hidden")) {
+  if (!running || paused || gardenDialog.open || !settingsDialog.classList.contains("hidden")) {
     return false;
   }
 
@@ -1587,6 +1684,7 @@ function setDirection(playerId, newDirection) {
 }
 
 document.addEventListener("keydown", (event) => {
+  if (gardenDialog.open) return;
   if (isTypingTarget(event.target)) {
     return;
   }
@@ -1705,6 +1803,7 @@ function readGamepads() {
 }
 
 function handleGamepad(gamepad, playerId) {
+  if (gardenDialog.open) return;
   const axisX = gamepad.axes[0] || 0;
   const axisY = gamepad.axes[1] || 0;
   const dpadUp = gamepad.buttons[12]?.pressed;
@@ -1939,10 +2038,12 @@ window.addEventListener("blur", () => {
 });
 
 applySettings();
+initGardenUI();
 showMenu();
 requestAnimationFrame(readGamepads);
 
-if ("serviceWorker" in navigator) {
+// Local previews should reflect edits immediately; production keeps offline caching.
+if ("serviceWorker" in navigator && !["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname)) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./service-worker.js");
   });

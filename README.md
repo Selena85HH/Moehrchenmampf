@@ -2,6 +2,23 @@
 
 Ein fröhliches Snake-ähnliches 2D-Spiel für den Browser und später als PWA für den Microsoft Store.
 
+## Version 42: Deine Gartenreise
+
+- Zehn auswählbare Gärten in zwei Welten; geschaffte Level bleiben freigeschaltet.
+- Gemeinsame Gartenpunkte für Level- und Endlosspiel. Punkte bleiben auch nach Niederlagen erhalten.
+- Sieben Punktebelohnungen und fünf besondere Auszeichnungen: Fell, Accessoire, Spur und Begleiter lassen sich kombinieren.
+- Drei dauerhafte Abzeichen je Level: Abschluss, eine Goldmöhre, drei Goldmöhren in einem Versuch. Alle 15 Welt-Abzeichen schalten einen Umhang frei.
+- Goldmöhren erscheinen im Level nach 2, 5, 8 … normalen Möhren, verschwinden dort nicht und bringen je fünf Gartenpunkte.
+- Endlos-Ereignisse alle zehn Möhren mit freiwilligen Goldmöhren (60 Spielschritte Zeit). Die Uhr stoppt in der Pause. Einmalige Meilensteine bei 20, 40 und 60 Möhren.
+- Waldlevel mit angekündigten Gartenpforten und paarweise verbundenen Hasengängen.
+- Animierte Ohren, Blinzeln, Sammelreaktionen und sichtbare Ausrüstung; reduzierte Bewegung wird berücksichtigt.
+
+Gartenkarte und Sammlung öffnen sich über dem pausierten Spiel. Im lokalen Duell bleiben die beiden Häschen unterscheidbar; Gartenpunkte werden im Einzelspiel verdient.
+
+Der Fortschritt gilt für dieses Gerät und diesen Browser und wird unter `moehrchenmampf-garden-v1` gespeichert, ergänzt durch die letzte gültige Sicherung. Bisherige Einstellungen und Highscores bleiben erhalten. Bei fehlgeschlagenem Speichern erscheint eine Warnung. Das Löschen der Browserdaten löscht auch den lokalen Fortschritt; es gibt keine Cloud-Synchronisierung.
+
+Neue Dateien: `progression.js` verwaltet Spielstände und Belohnungen, `adventure.js` die neuen Spielmechaniken und Grafiken, `garden-ui.js` Karte und Sammlung. Für die aktuelle Veröffentlichung die Quelldateien verwenden; das vorhandene v15-ZIP ist ein älterer Stand.
+
 ## Version 41
 
 - Neuer Garten-Look mit ruhigeren Farben, Spielmodus-Karten und sichtbarer Steuerungshilfe.
@@ -17,12 +34,17 @@ Die Levelgeschwindigkeit und die Kollisionsregeln bleiben unverändert.
 Mit Node.js lassen sich die Steuerung, der Spielablauf und die PWA-Dateien prüfen:
 
 ```powershell
-node --test tests/game.test.cjs
+node --test tests/*.test.cjs
+node --check progression.js
+node --check adventure.js
+node --check garden-ui.js
 node --check game.js
 node --check service-worker.js
 ```
 
 Zusätzlich die Darstellung auf PC und Smartphone sowie echte Controller im Browser prüfen.
+
+Die lokale Vorschau registriert keinen neuen Offline-Cache, damit Änderungen direkt sichtbar werden. Für Offline-Prüfungen die bereitgestellte HTTPS-Version verwenden. Nach einem Produktionsupdate alle alten Spiel-Fenster schließen und neu öffnen, damit der neue Offline-Cache aktiv wird.
 
 ## Lokal starten
 

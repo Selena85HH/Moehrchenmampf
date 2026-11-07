@@ -1498,3 +1498,105 @@ body.theme-contrast .mode-copy small, body.theme-contrast .mode-arrow { color: #
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* A growing garden: permanent progress, world map and combinable cosmetics. */
+.logo-title { display: flex; align-items: center; gap: 12px; line-height: 1.1; }
+.logo-title img { width: 80px; flex-shrink: 0; }
+.brand-wordmark { color: #31543c; font-size: clamp(1.1rem, 2.5vw, 1.65rem); letter-spacing: -0.04em; }
+.topbar { margin-bottom: 12px; }
+.message-overlay { padding: 12px; }
+.message-overlay h2 { font-size: clamp(1.25rem, 2.5vw, 1.7rem); }
+.message-overlay p { font-size: 0.85rem; line-height: 1.4; margin-bottom: 14px; }
+.mode-buttons button, body.theme-pastel .mode-buttons button { min-height: 64px; padding-block: 9px; }
+.garden-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid #dce3cf;
+  border-radius: 16px;
+  background: #f1f4e7;
+}
+.garden-progress-copy { display: grid; gap: 4px; min-width: 0; flex: 1; }
+.garden-progress-copy strong { font-size: 0.9rem; color: var(--leaf); }
+.garden-progress-copy span { font-size: 0.72rem; line-height: 1.4; color: var(--muted); }
+.garden-progress progress { width: 100%; height: 6px; border: 0; border-radius: 8px; overflow: hidden; accent-color: #6c975c; background: #dce5ce; }
+.garden-progress progress::-webkit-progress-bar { background: #dce5ce; }
+.garden-progress progress::-webkit-progress-value { background: #6c975c; border-radius: 8px; }
+.garden-navigation { display: flex; flex-wrap: wrap; gap: 6px; }
+.garden-navigation button { padding: 9px 11px; font-size: 0.75rem; box-shadow: none; background: #fffdf5; border-color: #c9d6bc; }
+.adventure-status { margin: 10px auto 0; max-width: 560px; min-height: 2.6em; font-size: 0.73rem; line-height: 1.4; color: var(--muted); text-align: center; }
+.message-overlay .round-rewards { padding: 12px; border: 1px solid #d7ddb9; border-radius: 12px; background: #ecf2dc; font-size: 0.8rem; }
+.save-warning { padding: 12px; border: 2px solid #a44c20; border-radius: 10px; color: #783716; background: #fff2cf; font-size: 0.8rem; }
+.garden-toast { position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 100; width: min(500px, calc(100% - 32px)); padding: 16px 20px; border: 1px solid #aec99e; border-radius: 16px; background: #fcfff2; box-shadow: 0 8px 32px #1b3b2730; color: #244631; line-height: 1.5; font-size: 0.9rem; pointer-events: none; }
+.garden-dialog { width: min(960px, calc(100% - 32px)); max-height: calc(100dvh - 48px); padding: 28px; border: 1px solid #cedbc0; border-radius: 24px; background: #fffdf5; color: #234632; box-shadow: 0 24px 100px #1c352c44; overflow-y: auto; }
+.garden-dialog::backdrop { background: #173b286b; backdrop-filter: blur(5px); }
+.garden-dialog-header { display: flex; justify-content: space-between; align-items: start; gap: 20px; }
+.garden-dialog-header h2 { margin-bottom: 12px; font-size: clamp(1.45rem, 4vw, 2rem); line-height: 1.2; }
+.garden-dialog-header .icon-button { flex-shrink: 0; }
+#gardenDialogDescription { max-width: 660px; color: #586d52; line-height: 1.6; font-size: 0.9rem; }
+.garden-tabs { display: flex; gap: 8px; padding: 4px 0 20px; position: sticky; top: -28px; z-index: 2; background: #fffdf5; }
+.garden-tabs button { padding: 10px 18px; background: #f0f4e6; border-color: #cedbc0; box-shadow: none; font-size: 0.85rem; }
+.garden-tabs button[aria-pressed="true"] { background: #3a684b; border-color: #3a684b; color: #fffdf5; }
+.garden-world { position: relative; overflow: hidden; margin-bottom: 20px; padding: 24px; border: 1px solid #d7e0c7; border-radius: 20px; background: radial-gradient(ellipse at 100% 0%, #d4e6bd, transparent 55%), #f0f5e5; }
+.garden-world.world-1 { background: radial-gradient(ellipse at 100% 0%, #5f8a80, transparent 60%), #294c48; color: #f7f8dc; border-color: #547967; }
+.world-kicker { font-size: 0.65rem; letter-spacing: 0.15em; font-weight: 800; line-height: 1.5; margin-bottom: 10px; }
+.garden-world h3 { font-size: 1.5rem; margin: 0 0 20px; font-weight: 800; }
+.garden-level-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.garden-level { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 6px; background: #fffdf5; border-color: #cedbc0; box-shadow: 0 3px 0 #becda9; color: #234632; font-size: 0.8rem; line-height: 1.4; }
+.garden-level strong { min-height: 2.8em; font-weight: 700; }
+.garden-level:disabled { opacity: 0.65; filter: grayscale(0.5); box-shadow: none; cursor: default; }
+.level-map-number { display: grid; place-items: center; width: 40px; height: 40px; background: #e8efd9; border-radius: 50%; font-size: 1.1rem; }
+.map-badges { display: flex; gap: 3px; font-size: 1rem; }
+.badge-earned { color: #916211; }
+.badge-empty { color: #7b8b72; }
+.world-goal { font-size: 0.75rem; line-height: 1.5; margin: 18px 0 0; }
+.garden-help { padding: 16px; border: 1px solid #dce4ce; border-radius: 14px; color: #53684d; font-size: 0.8rem; line-height: 1.65; }
+.collection-heading { margin: 24px 0 12px; font-size: 1.1rem; }
+.reward-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.reward-card { display: flex; flex-direction: column; gap: 10px; padding: 16px; border: 1px solid #d5dfc7; border-radius: 18px; background: #f7f8ef; }
+.reward-preview { display: grid; place-items: center; height: 130px; border-radius: 12px; background: radial-gradient(ellipse at center, #e2edcd, #f0f3e7); }
+.reward-preview svg { width: 130px; max-width: 100%; height: 110px; }
+.reward-card > strong { font-size: 0.9rem; }
+.reward-card p { margin: 0; font-size: 0.78rem; line-height: 1.5; color: #586c50; }
+.reward-card button { padding: 10px; margin-top: auto; font-size: 0.78rem; }
+.reward-card button[aria-pressed="true"] { color: #fffdf5; background: #3a684b; border-color: #3a684b; box-shadow: none; }
+.reward-locked { background: #f2f1e9; }
+.reward-locked .reward-preview { opacity: 0.7; }
+.reward-locked button:disabled { filter: none; opacity: 1; background: #e8e8dc; color: #5e674f; border-color: #d2d6c5; box-shadow: none; cursor: default; }
+body.theme-contrast .garden-progress, body.theme-contrast .round-rewards { background: #fff; border-color: #173b20; }
+body.theme-contrast .garden-progress strong, body.theme-contrast .garden-progress span { color: #08220d; }
+
+@media (min-width: 901px) and (min-height: 561px) {
+  .app-shell { padding-block: 16px; }
+  .game-panel { padding: 20px; }
+  .canvas-wrap { width: min(100%, max(360px, calc(100dvh - 300px))); }
+}
+@media (max-width: 700px) {
+  .logo-title img { display: none; }
+  .garden-progress { align-items: stretch; gap: 8px; padding: 10px; margin-bottom: 10px; }
+  .garden-navigation { flex-direction: column; flex-shrink: 0; justify-content: center; }
+  .garden-navigation button { padding: 7px 9px; font-size: 0.7rem; }
+  .garden-progress-copy strong { font-size: 0.8rem; }
+  .garden-progress-copy span { font-size: 0.66rem; }
+  .garden-dialog { width: calc(100% - 16px); max-height: calc(100dvh - 16px); padding: 16px; border-radius: 18px; }
+  .garden-dialog-header { gap: 8px; }
+  .garden-tabs { top: -16px; }
+  .garden-world { padding: 16px; }
+  .garden-world h3 { font-size: 1.2rem; }
+  .garden-level-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .garden-level { padding: 12px; }
+  .garden-level strong { min-height: auto; }
+  .reward-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .reward-card { padding: 10px; }
+  .reward-preview { height: 110px; }
+  .garden-toast { bottom: auto; top: 12px; font-size: 0.8rem; padding: 12px 16px; }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .garden-progress { margin-bottom: 6px; padding: 6px 10px; }
+  .garden-progress-copy span, .garden-progress progress { display: none; }
+  .garden-navigation { flex-direction: row; }
+  .adventure-status { font-size: 0.65rem; min-height: 0; }
+}
